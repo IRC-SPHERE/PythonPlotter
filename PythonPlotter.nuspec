@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>PythonPlotter</id>
+    <version>0.2</version>
+    <title>Python Plotter</title>
+    <authors>IRC-SPHERE</authors>
+    <owners>IRC-SPHERE</owners>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>http://irc-sphere.ac.uk</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Package to allow use of matplotlib from .NET</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright University of Bristol © 2016</copyright>
+    <tags>python matplotlib</tags>
+  </metadata>
+  <files>
+    <file src="bin\**\*.*" target="lib" />
+    <file src="bin/**/*.*" target="lib" />
+  </files>
+</package>

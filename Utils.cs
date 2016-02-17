@@ -35,7 +35,7 @@ namespace PythonPlotter
     /// </summary>
     public static class Utils
     {
-			/// <summary>
+		/// <summary>
 		/// Runs the python script. Currently this is *IX only
 		/// </summary>
 		/// <param name="script">Script.</param>
