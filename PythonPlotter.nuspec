@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>PythonPlotter</id>
-    <version>0.2</version>
+    <version>0.2.1</version>
     <title>Python Plotter</title>
     <authors>IRC-SPHERE</authors>
     <owners>IRC-SPHERE</owners>
@@ -15,7 +15,6 @@
     <tags>python matplotlib</tags>
   </metadata>
   <files>
-    <file src="bin\**\*.*" target="lib" />
-    <file src="bin/**/*.*" target="lib" />
+    <file src="bin/**/*.*" target="lib/net45" />
   </files>
 </package>
