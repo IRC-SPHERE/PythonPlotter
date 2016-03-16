@@ -41,7 +41,7 @@ namespace PythonPlotter
 		/// <param name="script">Script.</param>
 		/// <param name="filename">Script filename.</param>
 		/// <param name="python">Python executable.</param>
-		public static void RunPythonScript(string script, string filename = "script.py", string python = "/usr/local/bin/python")
+		public static void RunPythonScript(string script, string filename = "script.py", string python = "/usr/bin/python")
 		{
       		filename = filename.Replace( ":", "-" ); 
 

@@ -69,7 +69,7 @@ namespace PythonPlotter
 		/// Gets or sets the python executable.
 		/// </summary>
 		/// <value>The python.</value>
-		public string Python { get; set; } = "/usr/bin/local/python";
+		public string Python { get; set; } = "/usr/bin/python";
 
 		/// <summary>
 		/// Gets or sets the series.
@@ -261,7 +261,7 @@ namespace PythonPlotter
 				script.AppendFormat("show(block={0})\n", Block);
 			}
 
-			Utils.RunPythonScript(script.ToString(), scriptName);
+			Utils.RunPythonScript(script.ToString(), scriptName, Python);
 		}
         
         public void ConfigureAxis(StringBuilder script, bool isSubPlot)
@@ -320,9 +320,10 @@ namespace PythonPlotter
         /// <param name="xlabel">Xlabel.</param>
         /// <param name="ylabel">Ylabel.</param>
         /// <param name="plotType">Plot type.</param>
-		public static void Plot(IEnumerable<double> x, string title = "", string xlabel = "", string ylabel = "", PlotType plotType = PlotType.Line)
+		/// <param name="python">Path of python executable.</param>
+		public static void Plot(IEnumerable<double> x, string title = "", string xlabel = "", string ylabel = "", PlotType plotType = PlotType.Line, string python = "/usr/bin/python")
 		{
-			Plot(x, null, title, xlabel, ylabel, plotType);
+			Plot(x, null, title, xlabel, ylabel, plotType, python);
 		}
 
         /// <summary>
@@ -334,7 +335,8 @@ namespace PythonPlotter
         /// <param name="xlabel">Xlabel.</param>
         /// <param name="ylabel">Ylabel.</param>
         /// <param name="plotType">Plot type.</param>
-		public static void Plot(IEnumerable<double> x, IEnumerable<double> y = null, string title = "", string xlabel = "", string ylabel = "", PlotType plotType = PlotType.Line)
+		/// <param name="python">Path of python executable.</param>
+		public static void Plot(IEnumerable<double> x, IEnumerable<double> y = null, string title = "", string xlabel = "", string ylabel = "", PlotType plotType = PlotType.Line, string python = "/usr/bin/python")
 		{
 			ISeries[] series;
 
@@ -354,7 +356,7 @@ namespace PythonPlotter
 					break;
 			}
 
-			var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = series };
+			var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = series, Python = python };
 			plotter.Plot();
 		}
 
@@ -367,10 +369,11 @@ namespace PythonPlotter
         /// <param name="title">Plot title.</param>
         /// <param name="xLabel">x-axis label.</param>
         /// <param name="yLabel">y-axis label.</param>
-		public static void ErrorPlot(IEnumerable<double> x, IEnumerable<double> errorValues, IEnumerable<double> y = null, string title = "", string xlabel = "", string ylabel = "")
+		/// <param name="python">Path of python executable.</param>
+		public static void ErrorPlot(IEnumerable<double> x, IEnumerable<double> errorValues, IEnumerable<double> y = null, string title = "", string xLabel = "", string yLabel = "", string python = "/usr/bin/python")
 		{
 			var series = new[] { new ErrorLineSeries { X = x, Y = y, ErrorValues = errorValues } };
-			var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = series };
+			var plotter = new Plotter { Title = title, XLabel = xLabel, YLabel = yLabel, Series = series, Python = python };
 			plotter.Plot();
 		}
 
@@ -382,7 +385,8 @@ namespace PythonPlotter
         /// <param name="xlabel">Xlabel.</param>
         /// <param name="ylabel">Ylabel.</param>
         /// <param name="plotType">Plot type.</param>
-		public static void Plot(Dictionary<string, IEnumerable<double>> series, string title = "", string xlabel = "", string ylabel = "", PlotType plotType = PlotType.Line)
+		/// <param name="python">Path of python executable.</param>
+		public static void Plot(Dictionary<string, IEnumerable<double>> series, string title = "", string xlabel = "", string ylabel = "", PlotType plotType = PlotType.Line, string python = "/usr/bin/python")
 		{
 			ISeries[] plotSeries;
 
@@ -402,7 +406,7 @@ namespace PythonPlotter
 					break;
 			}
 
-			var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = plotSeries };
+			var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = plotSeries, Python = python };
 			plotter.Plot();
 		}
 
