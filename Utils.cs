@@ -26,15 +26,15 @@
 
 namespace PythonPlotter
 {
-    using System;
-    using System.Diagnostics;
-    using System.IO;
+	using System;
+	using System.Diagnostics;
+	using System.IO;
 
-    /// <summary>
-    /// The utils.
-    /// </summary>
-    public static class Utils
-    {
+	/// <summary>
+	/// The utils.
+	/// </summary>
+	public static class Utils
+	{
 		/// <summary>
 		/// Runs the python script. Currently this is *IX only
 		/// </summary>
@@ -43,39 +43,39 @@ namespace PythonPlotter
 		/// <param name="python">Python executable.</param>
 		public static void RunPythonScript(string script, string filename = "script.py", string python = "/usr/bin/python")
 		{
-      		filename = filename.Replace( ":", "-" ); 
+			filename = filename.Replace(":", "-"); 
 
 			using (var streamWriter = new StreamWriter(new FileStream(filename, FileMode.Create)))
 			{
 				// Make this executable
 				streamWriter.WriteLine("#!" + python);
-                streamWriter.WriteLine("# -*- coding: utf-8 -*-");
-                streamWriter.WriteLine("from __future__ import unicode_literals");
+				streamWriter.WriteLine("# -*- coding: utf-8 -*-");
+				streamWriter.WriteLine("from __future__ import unicode_literals");
 				streamWriter.Write(script);
 			}
 		
-			File.SetAttributes (filename, (FileAttributes)((uint)File.GetAttributes(filename) | 0x80000000)); 
+			File.SetAttributes(filename, (FileAttributes)((uint)File.GetAttributes(filename) | 0x80000000)); 
 
 			var processInfo = new ProcessStartInfo
-				{
-					FileName = filename,
-					CreateNoWindow = true,
-					UseShellExecute = false,
-					RedirectStandardOutput = true,
-					WorkingDirectory = Directory.GetCurrentDirectory()
-				};
-
-			try 
 			{
-				var process = Process.Start( processInfo );
+				FileName = filename,
+				CreateNoWindow = true,
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				WorkingDirectory = Directory.GetCurrentDirectory()
+			};
+
+			try
+			{
+				var process = Process.Start(processInfo);
 				process.WaitForExit();
-				Console.Write( process.StandardOutput.ReadToEnd() );
+				Console.Write(process.StandardOutput.ReadToEnd());
 				process.Close();
-			} 
-			catch ( Exception ex ) 
+			}
+			catch (Exception ex)
 			{
 				Console.WriteLine("Error in spawning plotting process: " + ex.Message); 
 			}
 		}
-  }
+	}
 }
