@@ -179,16 +179,10 @@ namespace PythonPlotter
 				script.AppendLine("from pylab import *");
 			}
 			#endif
-            
-			// script.AppendLine("from mpltools import style, special");
-			// script.AppendLine("style.use('ggplot')");
+
 			script.AppendLine("import seaborn as sns");
 			script.AppendLine("sns.set(style='darkgrid')");
 			script.AppendLine("sns.set_context('paper')");
-            
-			// script.AppendLine("from matplotlib import rc");
-			// script.AppendLine("rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})");
-			// script.AppendLine("rc('text', usetex=True)");
 
 			string scriptName = string.IsNullOrEmpty(ScriptName) ? "script.py" : (ScriptName.EndsWith(
 				                    ".py",
@@ -208,9 +202,7 @@ namespace PythonPlotter
 			{
 				script.AppendLine("fig, ax = subplots()");
 			}
-
-			// script.AppendFormat("pp = PdfPages('{0}.pdf')\n", figureName);
-
+                
 			// var legend = new List<string>();
 			foreach (var line in Series)
 			{
@@ -252,8 +244,6 @@ namespace PythonPlotter
 
 			// script.AppendLine("pp.savefig()");
 			// script.AppendLine("pp.close()");
-
-			// script.AppendFormat("import os\nprint(os.path.abspath('{0}'))\n", figureName);
 
 			if (Series.Any(ia => !string.IsNullOrEmpty(ia.Label)))
 			{
@@ -450,6 +440,15 @@ namespace PythonPlotter
 			plotter.Plot();
 		}
 
+        /// <summary>
+        /// Demo plot.
+        /// </summary>
+        public static void Demo(string python = "/usr/bin/python")
+        {
+            var x = Enumerable.Range(0, 200).Select(ia => (double)ia / 100.0);
+            var y = x.Select(ia => Math.Sin(2.0 * ia * Math.PI));
+            Plotter.Plot(x, y, "Test figure", "$x$", @"$\sin(2 \pi x)$", PlotType.Line, python);
+        }
 	}
 
 	/// <summary>
@@ -752,8 +751,6 @@ namespace PythonPlotter
 				y = X;
 			}
 
-			//script.AppendFormat("special.errorfill(array([{0}]), array([{1}]), array([{2}]), alpha_fill={3})\n", 
-			//	string.Join(", ", x), string.Join(", ", y), string.Join(", ", ErrorValues), AlphaFill);
 			script.AppendFormat("x = array([{0}])\n", string.Join(", ", x));
 			script.AppendFormat("y = array([{0}])\n", string.Join(", ", y));
 			script.AppendFormat("e = array([{0}])\n", string.Join(", ", ErrorValues));
