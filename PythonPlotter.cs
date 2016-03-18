@@ -127,11 +127,13 @@ namespace PythonPlotter
 		{ 
 			get
 			{
-				string figureName = string.IsNullOrEmpty(ScriptName) 
-                        ? "plot.pdf" 
-                        : (ScriptName.EndsWith(".py", StringComparison.Ordinal) ? ScriptName.Substring(
-					                    0,
-					                    ScriptName.Length - 3) + ".pdf" : ScriptName); 
+			    var figureName = string.IsNullOrEmpty(ScriptName)
+			        ? "plot.pdf"
+			        : (ScriptName.EndsWith(".py", StringComparison.Ordinal)
+			            ? ScriptName.Substring(
+			                0,
+			                ScriptName.Length - 3) + ".pdf"
+			            : ScriptName);
                 
 				figureName = figureName.EndsWith(".pdf", StringComparison.Ordinal) ? figureName : figureName + ".pdf";
 				figureName = figureName.Replace(":", "-");
@@ -140,7 +142,7 @@ namespace PythonPlotter
 		}
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="SphereEngine.PythonPlotter"/> is shown.
+		/// Gets or sets a value indicating whether this <see cref="PythonPlotter"/> is shown.
 		/// </summary>
 		/// <value><c>true</c> if show; otherwise, <c>false</c>.</value>
 		public bool Show { get; set; } = true;
@@ -153,7 +155,7 @@ namespace PythonPlotter
 		public Subplots Subplots { get; set; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="SphereEngine.PythonPlotter"/> is blocking.
+		/// Gets or sets a value indicating whether this <see cref="PythonPlotter"/> is blocking.
 		/// </summary>
 		/// <value><c>true</c> if block; otherwise, <c>false</c>.</value>
 		public bool Block { get; set; } = true;
@@ -184,26 +186,17 @@ namespace PythonPlotter
 			script.AppendLine("sns.set(style='darkgrid')");
 			script.AppendLine("sns.set_context('paper')");
 
-			string scriptName = string.IsNullOrEmpty(ScriptName) ? "script.py" : (ScriptName.EndsWith(
+			var scriptName = string.IsNullOrEmpty(ScriptName) ? "script.py" : (ScriptName.EndsWith(
 				                    ".py",
 				                    StringComparison.Ordinal) ? ScriptName : ScriptName + ".py");
-			scriptName.Replace(":", "-").Replace("/", "-");
-            
-			if (Subplots != null)
-			{
-				script.AppendFormat(
-					"fig, axs = subplots({0}, {1}, sharex={2}, sharey={3})\n",
-					Subplots.Rows,
-					Subplots.Columns,
-					Subplots.ShareX,
-					Subplots.ShareY);
-			}
-			else
-			{
-				script.AppendLine("fig, ax = subplots()");
-			}
-                
-			// var legend = new List<string>();
+			scriptName = scriptName.Replace(":", "-").Replace("/", "-");
+
+		    script.AppendLine(
+		        Subplots != null
+		            ? $"fig, axs = subplots({Subplots.Rows}, {Subplots.Columns}, sharex={Subplots.ShareX}, sharey={Subplots.ShareY})"
+		            : "fig, ax = subplots()");
+
+		    // var legend = new List<string>();
 			foreach (var line in Series)
 			{
 				// legend.Add("'" + line.Label + "'");
@@ -211,15 +204,15 @@ namespace PythonPlotter
 				{
 					if (Subplots.Rows > 1 && Subplots.Columns > 1)
 					{
-						script.AppendFormat("ax = axs[{0}, {1}]\n", line.Row, line.Column);
+					    script.AppendLine($"ax = axs[{line.Row}, {line.Column}]");
 					}
 					else if (Subplots.Rows == 1 && Subplots.Columns > 1)
 					{
-						script.AppendFormat("ax = axs[{0}]\n", line.Column);
+					    script.AppendLine($"ax = axs[{line.Column}]");
 					}
 					else if (Subplots.Columns == 1 && Subplots.Rows > 1)
 					{
-						script.AppendFormat("ax = axs[{0}]\n", line.Row);
+					    script.AppendLine($"ax = axs[{line.Row}]");
 					}
 					else if (Subplots.Rows == 1 && Subplots.Columns == 1)
 					{
@@ -237,29 +230,20 @@ namespace PythonPlotter
 				line.Plot(script);
 			}
 
-			script.AppendFormat("{0}title('{1}', fontsize=16)\n", Subplots == null ? "" : "fig.sup", Title);
+		    script.AppendLine($"{(Subplots == null ? "" : "fig.sup")}title('{Title}', fontsize=16)");
 			ConfigureAxis(script, false);
             
 			// script.AppendFormat("ax.legend([{0}], loc={1})\n", string.Join(", ", legend), (int)LegendPosition);
 
-			// script.AppendLine("pp.savefig()");
-			// script.AppendLine("pp.close()");
+		    script.AppendLine(
+		        Series.Any(ia => !string.IsNullOrEmpty(ia.Label))
+		            ? $"fig.savefig('{FigureName}', format='pdf', bbox_extra_artists=(lgd,), bbox_inches='tight')"
+		            : $"fig.savefig('{FigureName}', format='pdf')");
 
-			if (Series.Any(ia => !string.IsNullOrEmpty(ia.Label)))
-			{
-				script.AppendFormat(
-					"fig.savefig('{0}', format='pdf', bbox_extra_artists=(lgd,), bbox_inches='tight')\n",
-					FigureName);
-			}
-			else
-			{
-				script.AppendFormat("fig.savefig('{0}', format='pdf')\n", FigureName);
-			}
-                 
 
-			if (Show)
+		    if (Show)
 			{
-				script.AppendFormat("show(block={0})\n", Block);
+			    script.AppendLine($"show(block={Block})");
 			}
 
 			Utils.RunPythonScript(script.ToString(), scriptName, Python);
@@ -276,21 +260,20 @@ namespace PythonPlotter
 			{
 				if (Subplots == null)
 				{
-					script.AppendFormat("ax.set_xlabel('{0}', fontsize=16)\n", XLabel);
-					script.AppendFormat("ax.set_ylabel('{0}', fontsize=16)\n", YLabel);
+				    script.AppendLine($"ax.set_xlabel('{XLabel}', fontsize=16)");
+				    script.AppendLine($"ax.set_ylabel('{YLabel}', fontsize=16)");
 				}
 				else
 				{
 					// Set common labels
-					script.AppendFormat("fig.text(0.5, 0.04, '{0}', fontsize=16, ha='center', va='center')\n", XLabel);
-					script.AppendFormat(
-						"fig.text(0.04, 0.5, '{0}', fontsize=16, ha='center', va='center', rotation='vertical')\n",
-						YLabel);
+				    script.AppendLine($"fig.text(0.5, 0.04, '{XLabel}', fontsize=16, ha='center', va='center')");
+				    script.AppendLine(
+				        $"fig.text(0.04, 0.5, '{YLabel}', fontsize=16, ha='center', va='center', rotation='vertical')");
 				}
                 
 				if (Series.Any(ia => !string.IsNullOrEmpty(ia.Label)))
 				{
-					script.AppendFormat("lgd = ax.legend(fontsize=14, loc={0})\n", (int)LegendPosition);
+				    script.Append($"lgd = ax.legend(fontsize=14, loc={(int) LegendPosition})");
 				}
 			}
 			else
@@ -300,22 +283,22 @@ namespace PythonPlotter
 					var label = Series.First().Label;
 					if (!string.IsNullOrEmpty(label))
 					{
-						script.AppendFormat("ax.set_title('{0}')\n", label);
+					    script.AppendLine($"ax.set_title('{label}')\n");
 					}
 				}
 			}
             
-			script.AppendLine("tick_params(axis='both', which='major', labelsize=12)");
-			script.AppendLine("tick_params(axis='both', which='minor', labelsize=12)");
+			script.AppendLine("tick_params(axis='both', which='major')");
+			script.AppendLine("tick_params(axis='both', which='minor')");
             
 			if (XLim != null)
 			{
-				script.AppendFormat("ax.set_xlim([{0},{1}])\n", XLim.Item1, XLim.Item2);
+			    script.AppendLine($"ax.set_xlim([{XLim.Item1},{XLim.Item2}])");
 			}
 
 			if (YLim != null)
 			{
-				script.AppendFormat("ax.set_ylim([{0},{1}])\n", YLim.Item1, YLim.Item2);
+			    script.AppendLine($"ax.set_ylim([{YLim.Item1},{YLim.Item2}])");
 			}              
 		}
 
@@ -362,20 +345,20 @@ namespace PythonPlotter
 			switch (plotType)
 			{
 				case PlotType.Line:
-					series = new[] { new LineSeries { X = x, Y = y } };
+					series = new ISeries[] { new LineSeries { X = x, Y = y } };
 					break;
 				case PlotType.ErrorLine:
-					series = new[] { new ErrorLineSeries { X = x, Y = y } };
+					series = new ISeries[] { new ErrorLineSeries { X = x, Y = y } };
 					break;
 				case PlotType.Bar:
-					series = new[] { new BarSeries<double> { DependentValues = x, IndependentValues = y } };
+					series = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y } };
 					break;
 				default:
-					series = new[] { new LineSeries { X = x, Y = y } };
+					series = new ISeries[] { new LineSeries { X = x, Y = y } };
 					break;
 			}
 
-			var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = series, Python = python };
+		    var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = series, Python = python };
 			plotter.Plot();
 		}
 
@@ -397,7 +380,7 @@ namespace PythonPlotter
 		                             string yLabel = "",
 		                             string python = "/usr/bin/python")
 		{
-			var series = new[] { new ErrorLineSeries { X = x, Y = y, ErrorValues = errorValues } };
+			var series = new ISeries[] { new ErrorLineSeries { X = x, Y = y, ErrorValues = errorValues } };
 			var plotter = new Plotter { Title = title, XLabel = xLabel, YLabel = yLabel, Series = series, Python = python };
 			plotter.Plot();
 		}
@@ -423,16 +406,16 @@ namespace PythonPlotter
 			switch (plotType)
 			{
 				case PlotType.Line:
-					plotSeries = series.Select(ia => new LineSeries { Label = ia.Key, X = ia.Value }).ToArray();
+					plotSeries = series.Select(ia => (ISeries)(new LineSeries { Label = ia.Key, X = ia.Value })).ToArray();
 					break;
 				case PlotType.ErrorLine:
-					plotSeries = series.Select(ia => new ErrorLineSeries { Label = ia.Key, X = ia.Value }).ToArray();
+					plotSeries = series.Select(ia => (ISeries)(new ErrorLineSeries { Label = ia.Key, X = ia.Value })).ToArray();
 					break;
 				case PlotType.Bar:
-					plotSeries = series.Select(ia => new BarSeries<double> { Label = ia.Key, IndependentValues = ia.Value }).ToArray();
+					plotSeries = series.Select(ia => (ISeries)(new BarSeries<double> { Label = ia.Key, IndependentValues = ia.Value })).ToArray();
 					break;
 				default:
-					plotSeries = series.Select(ia => new LineSeries { Label = ia.Key, X = ia.Value }).ToArray();
+					plotSeries = series.Select(ia => (ISeries)(new LineSeries { Label = ia.Key, X = ia.Value })).ToArray();
 					break;
 			}
 
@@ -445,7 +428,7 @@ namespace PythonPlotter
         /// </summary>
         public static void Demo(string python = "/usr/bin/python")
         {
-            var x = Enumerable.Range(0, 200).Select(ia => (double)ia / 100.0);
+            var x = Enumerable.Range(0, 200).Select(ia => (double)ia / 100.0).ToArray();
             var y = x.Select(ia => Math.Sin(2.0 * ia * Math.PI));
             Plotter.Plot(x, y, "Test figure", "$x$", @"$\sin(2 \pi x)$", PlotType.Line, python);
         }
@@ -518,30 +501,20 @@ namespace PythonPlotter
 		{
 			if (Y == null)
 			{
-				if (string.IsNullOrEmpty(Label))
-				{
-					script.AppendFormat("ax.plot([{0}])\n", string.Join(", ", X));
-				}
-				else
-				{
-					script.AppendFormat("ax.plot([{0}], label='{1}')\n", string.Join(", ", X), Label);
-				}
+			    script.AppendLine(string.IsNullOrEmpty(Label)
+			        ? $"ax.plot([{string.Join(", ", X)}])"
+			        : $"ax.plot([{string.Join(", ", X)}], label='{Label}')");
 			}
 			else
 			{
-				if (X == null)
+			    if (X == null)
 				{
 					throw new InvalidOperationException("X and Y should not both be null");
 				}
 
-				if (string.IsNullOrEmpty(Label))
-				{
-					script.AppendFormat("ax.plot([{0}], [{1}])\n", string.Join(", ", X), string.Join(", ", Y));
-				}
-				else
-				{
-					script.AppendFormat("ax.plot([{0}], [{1}], label='{2}')\n", string.Join(", ", X), string.Join(", ", Y), Label);
-				}
+			    script.AppendLine(string.IsNullOrEmpty(Label)
+			        ? $"ax.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}])"
+			        : $"ax.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}], label='{Label}')");
 			}
 		}
 	}
@@ -559,30 +532,20 @@ namespace PythonPlotter
 		{
 			if (Y == null)
 			{
-				if (string.IsNullOrEmpty(Label))
-				{
-					script.AppendFormat("ax.scatter([{0}])\n", string.Join(", ", X));
-				}
-				else
-				{
-					script.AppendFormat("ax.scatter([{0}], label='{1}')\n", string.Join(", ", X), Label);
-				}
+			    script.AppendLine(string.IsNullOrEmpty(Label)
+			        ? $"ax.scatter([{string.Join(", ", X)}])"
+			        : $"ax.scatter([{string.Join(", ", X)}], label='{Label}')");
 			}
 			else
 			{
-				if (X == null)
+			    if (X == null)
 				{
 					throw new InvalidOperationException("X and Y should not both be null");
 				}
 
-				if (string.IsNullOrEmpty(Label))
-				{
-					script.AppendFormat("ax.scatter([{0}], [{1}])\n", string.Join(", ", X), string.Join(", ", Y));
-				}
-				else
-				{
-					script.AppendFormat("ax.scatter([{0}], [{1}], label='{2}')\n", string.Join(", ", X), string.Join(", ", Y), Label);
-				}
+			    script.AppendLine(string.IsNullOrEmpty(Label)
+			        ? $"ax.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}])"
+			        : $"ax.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}], label='{Label}')");
 			}
 		}
 	}
@@ -599,7 +562,7 @@ namespace PythonPlotter
 		public string Label { get; set; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="SphereEngine.BarSeries`1"/> is horizontal.
+		/// Gets or sets a value indicating whether this <see cref="PythonPlotter.BarSeries`1"/> is horizontal.
 		/// </summary>
 		/// <value><c>true</c> if horizontal; otherwise, <c>false</c>.</value>
 		public bool Horizontal { get; set; }
@@ -661,36 +624,28 @@ namespace PythonPlotter
 				throw new InvalidOperationException("DependentValues should not be null");
 			}
 
-			string command = Horizontal ? "barh" : "bar";
-			string errorString = Horizontal ? "xerr" : "yerr";
-			string errorValues = ErrorValues == null 
+			var command = Horizontal ? "barh" : "bar";
+			var errorString = Horizontal ? "xerr" : "yerr";
+			var errorValues = ErrorValues == null
                 ? string.Empty 
-                : string.Format(", {0}=[{1}]", errorString, string.Join(", ", ErrorValues));
+                : $", {errorString}=[{string.Join(", ", ErrorValues)}]";
 
 			var independent = string.Join(", ", (typeof(T) == typeof(double)) 
                 ? IndependentValues.Select(ia => ia.ToString()) 
                 : DependentValues.Select((ia, i) => i.ToString("D")));
 
-			if (string.IsNullOrEmpty(Label))
-			{
-				script.AppendFormat("ax.{0}([{1}], [{2}], {3}, color='{4}'{5})\n", command, independent, 
-					string.Join(", ", DependentValues), Width == 0.0 ? 1.0 : Width, 
-					string.IsNullOrEmpty(Color) ? "b" : Color, 
-					errorValues);
-			}
-			else
-			{
-				script.AppendFormat("ax.{0}([{1}], [{2}], {3}, color='{4}'{5}, label='{6}')\n", command, independent, 
-					string.Join(", ", DependentValues), Width == 0.0 ? 1.0 : Width, 
-					string.IsNullOrEmpty(Color) ? "b" : Color, 
-					errorValues, 
-					Label);
-			}
-            
-			if (IndependentValues != null && typeof(T) != typeof(double))
+		    var dependent = string.Join(", ", DependentValues);
+			var width = Math.Abs(Width) < double.Epsilon ? 1.0 : Width;
+			var color = string.IsNullOrEmpty(Color) ? "b" : Color;
+		    var label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
+
+		    script.AppendLine(
+		        $"ax.{command}([{independent}], [{dependent}], {width}, color='{color}'{errorValues}{label})");
+
+		    if (IndependentValues != null && typeof(T) != typeof(double))
 			{
 				// script.AppendLine("ax = gca()");
-				script.AppendFormat("ax.set_xticklabels(['{0}'])\n", string.Join("', '", IndependentValues));
+			    script.AppendLine($"ax.set_xticklabels(['{string.Join("', '", IndependentValues)}'])");
 			}
 		}
 	}
@@ -700,11 +655,6 @@ namespace PythonPlotter
 	/// </summary>
 	public class ErrorLineSeries : LineSeries
 	{
-		/// <summary>
-		/// The alpha fill.
-		/// </summary>
-		private double alphaFill = 0.1;
-
 		/// <summary>
 		/// The label for the error values. 
 		/// </summary>
@@ -716,21 +666,11 @@ namespace PythonPlotter
 		/// <value>The error values.</value>
 		public IEnumerable<double> ErrorValues { get; set; }
 
-		/// <summary>
-		/// Gets or sets the alpha fill.
-		/// </summary>
-		/// <value>The alpha fill.</value>
-		public double AlphaFill
-		{
-			get
-			{
-				return alphaFill;
-			}
-			set
-			{
-				alphaFill = value;
-			}
-		}
+	    /// <summary>
+	    /// Gets or sets the alpha fill.
+	    /// </summary>
+	    /// <value>The alpha fill.</value>
+	    public double AlphaFill { get; set; } = 0.1;
 
 		/// <summary>
 		/// Plot to the specified script.
@@ -751,26 +691,14 @@ namespace PythonPlotter
 				y = X;
 			}
 
-			script.AppendFormat("x = array([{0}])\n", string.Join(", ", x));
-			script.AppendFormat("y = array([{0}])\n", string.Join(", ", y));
-			script.AppendFormat("e = array([{0}])\n", string.Join(", ", ErrorValues));
-			if (string.IsNullOrEmpty(Label))
-			{
-				script.AppendLine("ax.plot(x, y)");
-			}
-			else
-			{
-				script.AppendFormat("ax.plot(x, y, label='{0}')\n", Label);
-			}
-            
-			if (string.IsNullOrEmpty(ErrorLabel))
-			{
-				script.AppendFormat("ax.fill_between(x, y-e, y+e, alpha={0})\n", AlphaFill);
-			}
-			else
-			{
-				script.AppendFormat("ax.fill_between(x, y-e, y+e, alpha={0}, label='{1}')\n", AlphaFill, ErrorLabel);
-			}
+		    script.AppendLine($"x = array([{string.Join(", ", x)}])");
+		    script.AppendLine($"y = array([{string.Join(", ", y)}])");
+		    script.AppendLine($"e = array([{string.Join(", ", ErrorValues)}])");
+		    script.AppendLine(string.IsNullOrEmpty(Label) ? "ax.plot(x, y)" : $"ax.plot(x, y, label='{Label}')");
+
+		    script.AppendLine(string.IsNullOrEmpty(ErrorLabel)
+		        ? $"ax.fill_between(x, y-e, y+e, alpha={AlphaFill})"
+		        : $"ax.fill_between(x, y-e, y+e, alpha={AlphaFill}, label='{ErrorLabel}')");
 		}
 	}
 
