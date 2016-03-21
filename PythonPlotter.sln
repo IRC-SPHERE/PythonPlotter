@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PythonPlotter", "PythonPlotter.csproj", "{7013C931-AAB9-4B60-A7CA-F71F6F1B09C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PythonPlotterTests", "PythonPlotterTests\PythonPlotterTests.csproj", "{BA9C99B1-A4BE-49A5-AA5B-6E3D45F276D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,5 +15,9 @@ Global
 		{7013C931-AAB9-4B60-A7CA-F71F6F1B09C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7013C931-AAB9-4B60-A7CA-F71F6F1B09C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7013C931-AAB9-4B60-A7CA-F71F6F1B09C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA9C99B1-A4BE-49A5-AA5B-6E3D45F276D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA9C99B1-A4BE-49A5-AA5B-6E3D45F276D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA9C99B1-A4BE-49A5-AA5B-6E3D45F276D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA9C99B1-A4BE-49A5-AA5B-6E3D45F276D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
