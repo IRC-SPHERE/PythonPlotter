@@ -36,6 +36,7 @@ namespace PythonPlotterTests
 
         private static void Main(string[] args)
         {
+            Plotter.Demo();
             Hinton();
         }
 
@@ -46,6 +47,7 @@ namespace PythonPlotterTests
 				           i => Enumerable.Range(0, 10).Select(
 					           j => random.NextDouble() - 0.5).ToArray()).ToArray();
 			Plotter.Series = new ISeries[] { new HintonSeries { Values = data } };
+		    Plotter.Title = "Hinton diagram";
 			Plotter.Plot();
 		}
     }
