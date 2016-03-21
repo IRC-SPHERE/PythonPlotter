@@ -11,7 +11,7 @@ var y = x.Select(ia => Math.Sin(2.0 * ia * Math.PI));
 Plotter.Plot(x, y, "Test figure", "$x$", @"$\sin(2 \pi x)$");
 ```
 
-![line plot](https://github.com/IRC-SPHERE/PythonPlotter/blob/master/test_figure.png "Line plot")
+![line plot](https://github.com/IRC-SPHERE/PythonPlotter/blob/master/images/test_figure.png "Line plot")
 
 ```C#
 var random = new Random(0);
@@ -26,7 +26,7 @@ var plotter = new Plotter
 plotter.Plot();
 ```
 
-![hinton diagram](https://github.com/IRC-SPHERE/PythonPlotter/blob/master/hinton.png "Hinton diagram")
+![hinton diagram](https://github.com/IRC-SPHERE/PythonPlotter/blob/master/images/hinton.png "Hinton diagram")
 
 # NUGET
 Available on NuGet at: 
