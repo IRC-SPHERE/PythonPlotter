@@ -1,10 +1,10 @@
 ﻿//
-// PythonPlotterTests.cs
+// AssemblyInfo.cs
 //
 // Author:
 //       Tom Diethe <tom.diethe@bristol.ac.uk>
 //
-// Copyright (c) 2015 University of Bristol
+// Copyright (c) 2016 University of Bristol
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,30 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
-namespace PythonPlotterTests
-{
-	using PythonPlotter;
+// Information about this assembly is defined by the following attributes.
+// Change them to the values specific to your project.
 
-    public class Program
-    {
-		/// <summary>
-		/// The entry point of the program, where the program control starts and ends.
-		/// </summary>
-		/// <param name="args">The command-line arguments.</param>
-        private static void Main(string[] args)
-        {
-            Plotter.Demo();
-            Tests.Hinton();
-			Tests.MatShow();
-			Tests.Subplots();
-        }
-    }
-}
+[assembly: AssemblyTitle("NugetTest")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("University of Bristol")]
+[assembly: AssemblyProduct("")]
+[assembly: AssemblyCopyright("University of Bristol")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
+// The form "{Major}.{Minor}.*" will automatically update the build and revision,
+// and "{Major}.{Minor}.{Build}.*" will update just the revision.
+
+[assembly: AssemblyVersion("1.0.*")]
+
+// The following attributes are used to specify the signing key for the assembly,
+// if desired. See the Mono documentation for more information about signing.
+
+//[assembly: AssemblyDelaySign(false)]
+//[assembly: AssemblyKeyFile("")]
+

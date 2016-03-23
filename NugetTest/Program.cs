@@ -1,10 +1,10 @@
 ﻿//
-// PythonPlotterTests.cs
+// Program.cs
 //
 // Author:
 //       Tom Diethe <tom.diethe@bristol.ac.uk>
 //
-// Copyright (c) 2015 University of Bristol
+// Copyright (c) 2016 University of Bristol
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace PythonPlotterTests
+namespace NugetTest
 {
 	using PythonPlotter;
 
-    public class Program
-    {
-		/// <summary>
-		/// The entry point of the program, where the program control starts and ends.
-		/// </summary>
-		/// <param name="args">The command-line arguments.</param>
-        private static void Main(string[] args)
-        {
-            Plotter.Demo();
-            Tests.Hinton();
+	class MainClass
+	{
+		public static void Main(string[] args)
+		{
+			Tests.Hinton();
 			Tests.MatShow();
 			Tests.Subplots();
-        }
-    }
+		}
+	}
 }
