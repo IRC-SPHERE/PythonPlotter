@@ -281,7 +281,7 @@ namespace PythonPlotter
                 
 				if (Series.Any(ia => !string.IsNullOrEmpty(ia.Label)))
 				{
-				    script.Append($"lgd = ax.legend(fontsize=14, loc={(int) LegendPosition})");
+				    script.AppendLine($"lgd = ax.legend(fontsize=14, loc={(int) LegendPosition})");
 				}
 			}
 			else
@@ -291,7 +291,7 @@ namespace PythonPlotter
 					var label = Series.First().Label;
 					if (!string.IsNullOrEmpty(label))
 					{
-					    script.AppendLine($"ax.set_title('{label}')\n");
+					    script.AppendLine($"ax.set_title('{label}')");
 					}
 				}
 			}
