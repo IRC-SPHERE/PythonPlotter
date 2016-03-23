@@ -114,8 +114,32 @@ namespace PythonPlotter
 		public LegendPosition LegendPosition { get; set; }
 
 		/// <summary>
-		/// Gets or sets the name of the script.
+		/// Gets or sets a value indicating whether this <see cref="PythonPlotter.Plotter"/> should show a grid.
 		/// </summary>
+		/// <value><c>true</c> if grid; otherwise, <c>false</c>.</value>
+		public bool Grid { get; set; } = true;
+
+		/// <summary>
+		/// Gets or sets a value indicating whether this <see cref="PythonPlotter.Plotter"/> is dark.
+		/// </summary>
+		/// <value><c>true</c> if dark; otherwise, <c>false</c>.</value>
+		public bool Dark { get; set; } = true;
+
+		/// <summary>
+		/// Gets the seaborn style.
+		/// </summary>
+		/// <value>The seaborn style.</value>
+		public string SeabornStyle
+		{
+			get
+			{
+				return (Dark ? "dark" : "white") + (Grid ? "grid" : string.Empty);
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the name of the script.
+		/// </s			ummary>
 		/// <value>The name of the script.</value>
 		public string ScriptName { get; set; } = "/tmp/script.py";
 
@@ -190,7 +214,7 @@ namespace PythonPlotter
 		    if (SeaBorn)
 		    {
 		        script.AppendLine("import seaborn as sns");
-		        script.AppendLine("sns.set(style='darkgrid')");
+				script.AppendLine($"sns.set(style='{SeabornStyle}')");
 		        script.AppendLine("sns.set_context('paper')");
 		    }
 
@@ -430,12 +454,47 @@ namespace PythonPlotter
 			var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = plotSeries, Python = python };
 			plotter.Plot();
 		}
+			
+		/// <summary>
+		/// Plot the matrix using matshow.
+		/// </summary>
+		/// <param name="matrix">Matrix.</param>
+		/// <param name="title">Title.</param>
+		/// <param name="xlabel">Xlabel.</param>
+		/// <param name="ylabel">Ylabel.</param>
+		/// <param name="python">Path of python executable.</param>
+		public static void MatShow(double[][] matrix, string title = "", string xlabel = "", string ylabel = "", string python = "/usr/lib/python")
+		{
+			var plotter = new Plotter 
+				{ 
+					Title = title, 
+					XLabel = xlabel, 
+					YLabel = ylabel, 
+					Python = python,
+					Series = new ISeries[] { new MatrixSeries { Values = matrix } }
+				};
+			plotter.Plot();
+		}
 
-	    public static void Hinton(double[][] matrix, string title = "", string xlabel = "", string ylabel = "", string python = "/usr/lib/python")
+		/// <summary>
+		/// Hinton diagram.
+		/// </summary>
+		/// <param name="matrix">Matrix.</param>
+		/// <param name="title">Title.</param>
+		/// <param name="xlabel">Xlabel.</param>
+		/// <param name="ylabel">Ylabel.</param>
+		/// <param name="python">Path of python executable.</param>
+		public static void Hinton(double[][] matrix, string title = "", string xlabel = "", string ylabel = "", string python = "/usr/lib/python")
 	    {
-	        var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Python = python };
-            // from mpltools import special
-
+	        var plotter = new Plotter 
+				{ 
+					Title = title, 
+					XLabel = xlabel, 
+					YLabel = ylabel, 
+					Python = python,
+					Series = new ISeries[] { new HintonSeries { Values = matrix } }
+				};
+			plotter.Plot();
 	    }
 
         /// <summary>

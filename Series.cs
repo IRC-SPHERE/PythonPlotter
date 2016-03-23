@@ -298,34 +298,56 @@ namespace PythonPlotter
 		}
 	}
 
-    /// <summary>
-   	/// Hinton diagram. See http://tonysyu.github.io/mpltools/auto_examples/special/plot_hinton.html
-    /// </summary>
-    public class HintonSeries : BaseSeries
-    {
+	/// <summary>
+	/// For use with matshow
+	/// </summary>
+	public class MatrixSeries : BaseSeries
+	{
 
 		/// <summary>
 		/// Gets or sets the values.
 		/// </summary>
 		public double[][] Values { get; set; }
 
-        /// <summary>
-        /// Gets or sets the values as a string.
-        /// </summary>
-        public string ValuesAsString
-        {
-            get { return "[[" + string.Join("], [", Values.Select(ia => string.Join(", ", ia))) + "]]"; }
-        }
+		/// <summary>
+		/// Gets or sets the color map.
+		/// </summary>
+		public string ColorMap { get; set; } = "gray";
 
+		/// <summary>
+		/// Gets or sets the values as a string.
+		/// </summary>
+		protected string ValuesAsString
+		{
+			get { return "[[" + string.Join("], [", Values.Select(ia => string.Join(", ", ia))) + "]]"; }
+		}
+
+		/// <summary>
+		/// Plot to the specified script.
+		/// </summary>
+		/// <param name="script">Script.</param>
+		public override void Plot(StringBuilder script)
+		{
+			script.AppendLine($"x = array({ValuesAsString})");
+			script.AppendLine($"ax.matshow(x, cmap='{ColorMap}')");
+		}
+	}
+
+    /// <summary>
+   	/// Hinton diagram. See http://tonysyu.github.io/mpltools/auto_examples/special/plot_hinton.html
+    /// </summary>
+    public class HintonSeries : MatrixSeries
+    {
         /// <summary>
         /// Plot to the specified script.
         /// </summary>
         /// <param name="script">Script.</param>
         public override void Plot(StringBuilder script)
         {
+			// Note that the color map is ignored
             script.AppendLine("from mpltools import special");
             script.AppendLine($"x = array({ValuesAsString})");
-            script.AppendLine($"special.hinton(x)");
+			script.AppendLine($"special.hinton(x)");
         }
     }
 }
