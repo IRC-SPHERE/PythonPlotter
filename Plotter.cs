@@ -471,7 +471,8 @@ namespace PythonPlotter
 					XLabel = xlabel, 
 					YLabel = ylabel, 
 					Python = python,
-					Series = new ISeries[] { new MatrixSeries { Values = matrix } }
+					Series = new ISeries[] { new MatrixSeries { Values = matrix } },
+					Grid = false
 				};
 			plotter.Plot();
 		}
@@ -492,7 +493,8 @@ namespace PythonPlotter
 					XLabel = xlabel, 
 					YLabel = ylabel, 
 					Python = python,
-					Series = new ISeries[] { new HintonSeries { Values = matrix } }
+					Series = new ISeries[] { new HintonSeries { Values = matrix } },
+					Grid = false
 				};
 			plotter.Plot();
 	    }
