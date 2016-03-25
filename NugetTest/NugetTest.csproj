@@ -30,15 +30,15 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="PythonPlotter">
-      <HintPath>..\packages\PythonPlotter.0.2.12\lib\net45\Release\PythonPlotter.dll</HintPath>
+      <HintPath>..\packages\PythonPlotter.0.2.13\lib\net45\Release\PythonPlotter.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

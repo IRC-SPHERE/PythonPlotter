@@ -218,10 +218,9 @@ namespace PythonPlotter
 		        script.AppendLine("sns.set_context('paper')");
 		    }
 
-		    var scriptName = string.IsNullOrEmpty(ScriptName) ? "script.py" : (ScriptName.EndsWith(
-				                    ".py",
+		    var scriptName = string.IsNullOrEmpty(ScriptName) ? "script.py" : (ScriptName.EndsWith(".py",
 				                    StringComparison.Ordinal) ? ScriptName : ScriptName + ".py");
-			scriptName = scriptName.Replace(":", "-").Replace("/", "-");
+            scriptName = scriptName.Replace(":", "-"); // .Replace("/", "-");
 
 		    script.AppendLine(
 		        Subplots != null
@@ -249,7 +248,7 @@ namespace PythonPlotter
 					else if (Subplots.Rows == 1 && Subplots.Columns == 1)
 					{
 						// Just in case someone specificies subplots(1, 1) for some reason
-						script.AppendFormat("ax = axs\n", line.Row);
+                        script.AppendFormat($"ax = axs[{line.Row}]");
 					}
 					else
 					{
@@ -260,12 +259,19 @@ namespace PythonPlotter
 				}
                 
 				line.Plot(script);
+
+                if (Series.Any(ia => !string.IsNullOrEmpty(ia.Label)))
+                {
+                    script.AppendLine($"lgd = ax.legend(fontsize=14, loc={(int) LegendPosition})");
+                }
 			}
 
 		    script.AppendLine($"{(Subplots == null ? "" : "fig.sup")}title('{Title}', fontsize=16)");
 			ConfigureAxis(script, false);
-            
-			// script.AppendFormat("ax.legend([{0}], loc={1})\n", string.Join(", ", legend), (int)LegendPosition);
+
+            //var ls = string.Join(", ", Legend);
+            //script.AppendLine("ax.legend([{ls}], loc={(int)LegendPosition})");
+            //script.AppendLine("ax.legend()");
 
 		    script.AppendLine(
 		        Series.Any(ia => !string.IsNullOrEmpty(ia.Label))
@@ -301,11 +307,6 @@ namespace PythonPlotter
 				    script.AppendLine($"fig.text(0.5, 0.04, '{XLabel}', fontsize=16, ha='center', va='center')");
 				    script.AppendLine(
 				        $"fig.text(0.04, 0.5, '{YLabel}', fontsize=16, ha='center', va='center', rotation='vertical')");
-				}
-                
-				if (Series.Any(ia => !string.IsNullOrEmpty(ia.Label)))
-				{
-				    script.AppendLine($"lgd = ax.legend(fontsize=14, loc={(int) LegendPosition})");
 				}
 			}
 			else

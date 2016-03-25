@@ -36,7 +36,7 @@ namespace PythonPlotter
 		/// </summary>
 		public static void Hinton()
 		{
-			var plotter = new Plotter();
+            var plotter = new Plotter { Grid = false };
 			var random = new Random(0);
 			var data = Enumerable.Range(0, 20).Select(
 				i => Enumerable.Range(0, 10).Select(
@@ -61,6 +61,9 @@ namespace PythonPlotter
 			plotter.Plot();
 		}
 
+        /// <summary>
+        /// Tests Subplots.
+        /// </summary>
 		public static void Subplots()
 		{
 			var zeros = Enumerable.Repeat(0.0, 150).ToArray();
@@ -69,7 +72,11 @@ namespace PythonPlotter
 
 			// zObs = new[] { zeros.Concat(ones).Concat(zeros).ToArray(), sine }; 
 			var plotter = new Plotter { Subplots = new Subplots { Rows = 2, Columns = 1 }, Title = "Subplots" };
-			plotter.Series = new ISeries[] { new LineSeries { X = zeros.Concat(ones).Concat(zeros).ToArray(), Row = 0 }, new LineSeries { X = sine, Row = 1 } };
+			plotter.Series = new ISeries[] 
+            {
+                new LineSeries { X = zeros.Concat(ones).Concat(zeros).ToArray(), Row = 0, Label = "square" }, 
+                new LineSeries { X = sine, Row = 1, Label = "$sin(x)$" } 
+            };
 			plotter.Plot();
 		}
 	}
