@@ -113,14 +113,20 @@ namespace PythonPlotter
 		/// <value>The legend position.</value>
 		public LegendPosition LegendPosition { get; set; }
 
+        /// <summary>
+        /// Gets or sets the twin x.
+        /// </summary>
+        /// <value>The twin x.</value>
+        public bool TwinX { get; set; }
+
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="PythonPlotter.Plotter"/> should show a grid.
+		/// Gets or sets a value indicating whether this <see cref="Plotter"/> should show a grid.
 		/// </summary>
 		/// <value><c>true</c> if grid; otherwise, <c>false</c>.</value>
 		public bool Grid { get; set; } = true;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="PythonPlotter.Plotter"/> is dark.
+		/// Gets or sets a value indicating whether this <see cref="Plotter"/> is dark.
 		/// </summary>
 		/// <value><c>true</c> if dark; otherwise, <c>false</c>.</value>
 		public bool Dark { get; set; } = true;
@@ -139,9 +145,25 @@ namespace PythonPlotter
 
 		/// <summary>
 		/// Gets or sets the name of the script.
-		/// </s			ummary>
+		/// </summary>
 		/// <value>The name of the script.</value>
 		public string ScriptName { get; set; } = "/tmp/script.py";
+
+        /// <summary>
+        /// Gets the name of the valid script.
+        /// </summary>
+        /// <value>The name of the valid script.</value>
+        public string ValidScriptName
+        {
+            get
+            {
+                var scriptName = string.IsNullOrEmpty(ScriptName) 
+                                       ? "script.py" 
+                                       : (ScriptName.EndsWith(".py", StringComparison.Ordinal) ? ScriptName : ScriptName + ".py");
+                scriptName = scriptName.Replace(":", "-"); // .Replace("/", "-");
+                return scriptName;
+            }
+        }
 
 		/// <summary>
 		/// Gets or sets the name of the pdf figure.
@@ -189,124 +211,195 @@ namespace PythonPlotter
         /// </summary>
         public bool SeaBorn { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets the script.
+        /// </summary>
+        /// <value>The script.</value>
+        public StringBuilder Script { get; set; } = new StringBuilder();
+
 		/// <summary>
 		/// Do the plotting.
 		/// </summary>
-		public void Plot()
+        public void Plot(StringBuilder additional = null)
 		{
-			var script = new StringBuilder();
-			script.AppendLine("import warnings;");
-			#if FALSE
+			Script = new StringBuilder();
+			
+            BuildPreamble();
+            BuildScript();
+
+            if (additional != null)
             {
+                Script.Append(additional);
+            }
+
+            BuildPostamble();
+
+			Utils.RunPythonScript(Script.ToString(), ValidScriptName, Python);
+		}
+
+        /// <summary>
+        /// Builds the preamble.
+        /// </summary>
+        /// <returns>The preamble.</returns>
+        public void BuildPreamble()
+        {
+            Script.AppendLine("import warnings;");
+            #if FALSE
+                                                {
                 // Disable warnings for pylab only
                 script.AppendLine("with warnings.catch_warnings():");
                 script.AppendLine("    warnings.simplefilter('ignore');");
                 script.AppendLine("    from pylab import *");
             }
-			#else
-			{
-				// Globally disable warnings 
-				script.AppendLine("warnings.simplefilter('ignore');"); 
-				script.AppendLine("from pylab import *");
-			}
-			#endif
+            #else
+            {
+                // Globally disable warnings 
+                Script.AppendLine("warnings.simplefilter('ignore');"); 
+            }
+            #endif
 
-		    if (SeaBorn)
-		    {
-		        script.AppendLine("import seaborn as sns");
-				script.AppendLine($"sns.set(style='{SeabornStyle}')");
-		        script.AppendLine("sns.set_context('paper')");
-		    }
+            Script.AppendLine("from pylab import *");
+            Script.AppendLine("import itertools");
 
-		    var scriptName = string.IsNullOrEmpty(ScriptName) ? "script.py" : (ScriptName.EndsWith(".py",
-				                    StringComparison.Ordinal) ? ScriptName : ScriptName + ".py");
-            scriptName = scriptName.Replace(":", "-"); // .Replace("/", "-");
+            if (SeaBorn)
+            {
+                Script.AppendLine("import seaborn as sns");
+                Script.AppendLine($"sns.set(style='{SeabornStyle}')");
+                Script.AppendLine("sns.set_context('paper')");
+                Script.AppendLine("palette = itertools.cycle(sns.color_palette())");
+            }
+            //else
+            //{
+            //    Script.AppendLine("palette = itertools.cycle(cm.viridis)");
+            //}
 
-		    script.AppendLine(
-		        Subplots != null
-		            ? $"fig, axs = subplots({Subplots.Rows}, {Subplots.Columns}, sharex={Subplots.ShareX}, sharey={Subplots.ShareY})"
-		            : "fig, ax = subplots()");
+        }
 
-		    // var legend = new List<string>();
-			foreach (var line in Series)
-			{
-				// legend.Add("'" + line.Label + "'");
-				if (Subplots != null)
-				{
-					if (Subplots.Rows > 1 && Subplots.Columns > 1)
-					{
-					    script.AppendLine($"ax = axs[{line.Row}, {line.Column}]");
-					}
-					else if (Subplots.Rows == 1 && Subplots.Columns > 1)
-					{
-					    script.AppendLine($"ax = axs[{line.Column}]");
-					}
-					else if (Subplots.Columns == 1 && Subplots.Rows > 1)
-					{
-					    script.AppendLine($"ax = axs[{line.Row}]");
-					}
-					else if (Subplots.Rows == 1 && Subplots.Columns == 1)
-					{
-						// Just in case someone specificies subplots(1, 1) for some reason
-                        script.AppendFormat($"ax = axs[{line.Row}]");
-					}
-					else
-					{
-						throw new InvalidOperationException("Invalid row/column specificiation for subplots");
-					}
-                    
-					ConfigureAxis(script, true);
-				}
-                
-				line.Plot(script);
+        /// <summary>
+        /// Builds the script.
+        /// </summary>
+        /// <returns>The script.</returns>
+        public void BuildScript()
+        {
+            string ax = "ax";
+
+            if (Subplots == null)
+            {
+                if (TwinX)
+                {
+                    Script.AppendLine("ax2 = ax.twinx()");
+                    ax = "ax2";
+                }
+                else
+                {
+                    Script.AppendLine("fig, ax = subplots()");
+                }
+            }
+            else
+            {
+                if (TwinX)
+                {
+                    throw new InvalidOperationException("Simultaneous Subplots and TwinX are currently not supported");
+                }
+
+                Script.AppendLine($"fig, axs = subplots({Subplots.Rows}, {Subplots.Columns}, sharex={Subplots.ShareX}, sharey={Subplots.ShareY})");
+            }
+
+
+            if (Subplots != null && TwinX)
+            {
+                throw new InvalidOperationException("Simultaneous Subplots and TwinX are currently not supported");
+            }
+
+            // var legend = new List<string>();
+            foreach (var line in Series)
+            {
+                // legend.Add("'" + line.Label + "'");
+                if (Subplots != null)
+                {
+                    if (Subplots.Rows > 1 && Subplots.Columns > 1)
+                    {
+                        Script.AppendLine($"ax = axs[{line.Row}, {line.Column}]");
+                    }
+                    else if (Subplots.Rows == 1 && Subplots.Columns > 1)
+                    {
+                        Script.AppendLine($"ax = axs[{line.Column}]");
+                    }
+                    else if (Subplots.Columns == 1 && Subplots.Rows > 1)
+                    {
+                        Script.AppendLine($"ax = axs[{line.Row}]");
+                    }
+                    else if (Subplots.Rows == 1 && Subplots.Columns == 1)
+                    {
+                        // Just in case someone specificies subplots(1, 1) for some reason
+                        Script.AppendLine($"ax = axs[{line.Row}]");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Invalid row/column specificiation for subplots");
+                    }
+
+                    ConfigureAxis(ax, true);
+                }
+
+                if (TwinX && string.IsNullOrEmpty(line.Color))
+                {
+                    line.Color = "next(palette)";
+                }
+
+                line.Plot(ax, Script);
 
                 if (Series.Any(ia => !string.IsNullOrEmpty(ia.Label)))
                 {
-                    script.AppendLine($"lgd = ax.legend(fontsize=14, loc={(int) LegendPosition})");
+                    Script.AppendLine($"lgd = {ax}.legend(fontsize=14, loc={(int) LegendPosition})");
                 }
-			}
+            }
 
-		    script.AppendLine($"{(Subplots == null ? "" : "fig.sup")}title('{Title}', fontsize=16)");
-			ConfigureAxis(script, false);
+            Script.AppendLine($"{(Subplots == null ? "" : "fig.sup")}title('{Title}', fontsize=16)");
+            ConfigureAxis(ax, false);
 
+        }
+
+        /// <summary>
+        /// Builds the postamble.
+        /// </summary>
+        /// <returns>The postamble.</returns>
+        public void BuildPostamble()
+        {
             //var ls = string.Join(", ", Legend);
             //script.AppendLine("ax.legend([{ls}], loc={(int)LegendPosition})");
             //script.AppendLine("ax.legend()");
 
-		    script.AppendLine(
-		        Series.Any(ia => !string.IsNullOrEmpty(ia.Label))
-		            ? $"fig.savefig('{FigureName}', format='pdf', bbox_extra_artists=(lgd,), bbox_inches='tight')"
-		            : $"fig.savefig('{FigureName}', format='pdf')");
+            Script.AppendLine(
+                Series.Any(ia => !string.IsNullOrEmpty(ia.Label))
+                ? $"fig.savefig('{FigureName}', format='pdf', bbox_extra_artists=(lgd,), bbox_inches='tight')"
+                : $"fig.savefig('{FigureName}', format='pdf')");
 
 
-		    if (Show)
-			{
-			    script.AppendLine($"show(block={Block})");
-			}
-
-			Utils.RunPythonScript(script.ToString(), scriptName, Python);
-		}
+            if (Show)
+            {
+                Script.AppendLine($"show(block={Block})");
+            }
+        }
 
 		/// <summary>
 		/// Configures the axis.
 		/// </summary>
-		/// <param name="script">Script.</param>
 		/// <param name="isSubPlot">If set to <c>true</c> is sub plot.</param>
-		public void ConfigureAxis(StringBuilder script, bool isSubPlot)
+        public void ConfigureAxis(string ax, bool isSubPlot)
 		{
 			if (!isSubPlot)
 			{
 				if (Subplots == null)
 				{
-				    script.AppendLine($"ax.set_xlabel('{XLabel}', fontsize=16)");
-				    script.AppendLine($"ax.set_ylabel('{YLabel}', fontsize=16)");
+                    Script.AppendLine($"{ax}.set_xlabel('{XLabel}', fontsize=16)");
+                    Script.AppendLine($"{ax}.set_ylabel('{YLabel}', fontsize=16)");
 				}
 				else
 				{
 					// Set common labels
-				    script.AppendLine($"fig.text(0.5, 0.04, '{XLabel}', fontsize=16, ha='center', va='center')");
-				    script.AppendLine(
-				        $"fig.text(0.04, 0.5, '{YLabel}', fontsize=16, ha='center', va='center', rotation='vertical')");
+				    Script.AppendLine($"fig.text(0.5, 0.04, '{XLabel}', fontsize=16, ha='center', va='center')");
+				    Script.AppendLine($"fig.text(0.04, 0.5, '{YLabel}', fontsize=16, ha='center', va='center', rotation='vertical')");
 				}
 			}
 			else
@@ -316,22 +409,22 @@ namespace PythonPlotter
 					var label = Series.First().Label;
 					if (!string.IsNullOrEmpty(label))
 					{
-					    script.AppendLine($"ax.set_title('{label}')");
+                        Script.AppendLine($"{ax}.set_title('{label}')");
 					}
 				}
 			}
             
-			script.AppendLine("tick_params(axis='both', which='major')");
-			script.AppendLine("tick_params(axis='both', which='minor')");
+			Script.AppendLine("tick_params(axis='both', which='major')");
+			Script.AppendLine("tick_params(axis='both', which='minor')");
             
 			if (XLim != null)
 			{
-			    script.AppendLine($"ax.set_xlim([{XLim.Item1},{XLim.Item2}])");
+                Script.AppendLine($"{ax}.set_xlim([{XLim.Item1},{XLim.Item2}])");
 			}
 
 			if (YLim != null)
 			{
-			    script.AppendLine($"ax.set_ylim([{YLim.Item1},{YLim.Item2}])");
+                Script.AppendLine($"{ax}.set_ylim([{YLim.Item1},{YLim.Item2}])");
 			}              
 		}
 
@@ -394,6 +487,62 @@ namespace PythonPlotter
 		    var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = series, Python = python };
 			plotter.Plot();
 		}
+
+        public static void TwinPlot(IEnumerable<double> x,
+                                    IEnumerable<double> y1,
+                                    IEnumerable<double> y2,
+                                    string title = "",
+                                    string xlabel = "",
+                                    string y1label = "",
+                                    string y2label = "",
+                                    PlotType plotType1 = PlotType.Line,
+                                    PlotType plotType2 = PlotType.Line,
+                                    string python = "/usr/bin/python")
+        {
+            ISeries[] series1, series2;
+
+            switch (plotType1)
+            {
+                case PlotType.Line:
+                    series1 = new ISeries[] { new LineSeries { X = x, Y = y1 } };
+                break;
+                case PlotType.ErrorLine:
+                    series1 = new ISeries[] { new ErrorLineSeries { X = x, Y = y1 } };
+                break;
+                case PlotType.Bar:
+                    series1 = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y1 } };
+                break;
+                default:
+                    series1 = new ISeries[] { new LineSeries { X = x, Y = y1 } };
+                break;
+            }
+
+            switch (plotType2)
+            {
+                case PlotType.Line:
+                    series2 = new ISeries[] { new LineSeries { X = x, Y = y2 } };
+                break;
+                case PlotType.ErrorLine:
+                    series2 = new ISeries[] { new ErrorLineSeries { X = x, Y = y2 } };
+                break;
+                case PlotType.Bar:
+                    series2 = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y2 } };
+                break;
+                default:
+                    series2 = new ISeries[] { new LineSeries { X = x, Y = y2 } };
+                break;
+            }
+
+            var plotter2 = new Plotter { XLabel = xlabel, YLabel = y2label, Series = series2, TwinX = true };
+            plotter2.BuildScript();
+
+            // TODO: http://matplotlib.org/examples/api/two_scales.html
+
+            var plotter1 = new Plotter { Title = title, XLabel = xlabel, YLabel = y1label, Series = series1, Python = python };
+            plotter1.Plot(plotter2.Script);
+
+
+        }
 
 		/// <summary>
 		/// Plot lines with shaded error regions 
@@ -505,9 +654,9 @@ namespace PythonPlotter
         /// </summary>
         public static void Demo(string python = "/usr/bin/python")
         {
-            var x = Enumerable.Range(0, 200).Select(ia => (double)ia / 100.0).ToArray();
+            var x = Enumerable.Range(0, 200).Select(ia => ia / 100.0).ToArray();
             var y = x.Select(ia => Math.Sin(2.0 * ia * Math.PI));
-            Plotter.Plot(x, y, "Test figure", "$x$", @"$\sin(2 \pi x)$", PlotType.Line, python);
+            Plot(x, y, "Test figure", "$x$", @"$\sin(2 \pi x)$", PlotType.Line, python);
         }
 	}
 

@@ -42,21 +42,28 @@ namespace PythonPlotter
 		/// <value>The label.</value>
 		string Label { get; set; }
 
+        /// <summary>
+        /// Gets or sets the row index (for subplots)
+        /// </summary>
+        int Row { get; set; }
+
+        /// <summary>
+        /// Gets or sets the column index (for subplots)
+        /// </summary>
+        int Column { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color.
+        /// </summary>
+        /// <value>The color.</value>
+        string Color { get; set; }
+
 		/// <summary>
 		/// Plot to the specified script.
 		/// </summary>
+        /// <param name="ax">The axis to plot to.</param>
 		/// <param name="script">Script.</param>
-		void Plot(StringBuilder script);
-
-		/// <summary>
-		/// Gets or sets the row index (for subplots)
-		/// </summary>
-		int Row { get; set; }
-
-		/// <summary>
-		/// Gets or sets the column index (for subplots)
-		/// </summary>
-		int Column { get; set; }
+		void Plot(string ax, StringBuilder script);
 	}
 
     /// <summary>
@@ -81,10 +88,16 @@ namespace PythonPlotter
         public int Column { get; set; }
 
         /// <summary>
+        /// The color.
+        /// </summary>
+        public string Color { get; set; }
+
+        /// <summary>
         /// Plot to the specified script.
         /// </summary>
+        /// <param name="ax">The axis to plot to.</param>
         /// <param name="script">Script.</param>
-        public virtual void Plot(StringBuilder script)
+        public virtual void Plot(string ax, StringBuilder script)
         {
             throw new NotImplementedException();
         }
@@ -108,14 +121,16 @@ namespace PythonPlotter
 		/// <summary>
 		/// Plot to the specified script.
 		/// </summary>
-		/// <param name="script">Script.</param>
-		public override void Plot(StringBuilder script)
+        /// <param name="ax">The axis to plot to.</param>
+        /// <param name="script">Script.</param>
+        public override void Plot(string ax, StringBuilder script)
 		{
-			if (Y == null)
+            var label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
+            var color = string.IsNullOrEmpty(Color) ? "" : $", color={Color}";
+
+            if (Y == null)
 			{
-			    script.AppendLine(string.IsNullOrEmpty(Label)
-			        ? $"ax.plot([{string.Join(", ", X)}])"
-			        : $"ax.plot([{string.Join(", ", X)}], label='{Label}')");
+                script.AppendLine($"{ax}.plot([{string.Join(", ", X)}]{label}{color})");
 			}
 			else
 			{
@@ -124,9 +139,7 @@ namespace PythonPlotter
 					throw new InvalidOperationException("X and Y should not both be null");
 				}
 
-			    script.AppendLine(string.IsNullOrEmpty(Label)
-			        ? $"ax.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}])"
-			        : $"ax.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}], label='{Label}')");
+                script.AppendLine($"{ax}.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color})");
 			}
 		}
 	}
@@ -139,14 +152,16 @@ namespace PythonPlotter
 		/// <summary>
 		/// Plot to the specified script
 		/// </summary>
-		/// <param name="script"></param>
-		public override void Plot(StringBuilder script)
+        /// <param name="ax">The axis to plot to.</param>
+        /// <param name="script"></param>
+        public override void Plot(string ax, StringBuilder script)
 		{
-			if (Y == null)
+            var label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
+            var color = string.IsNullOrEmpty(Color) ? "" : $", color={Color}";
+
+            if (Y == null)
 			{
-			    script.AppendLine(string.IsNullOrEmpty(Label)
-			        ? $"ax.scatter([{string.Join(", ", X)}])"
-			        : $"ax.scatter([{string.Join(", ", X)}], label='{Label}')");
+                script.AppendLine($"{ax}.scatter([{string.Join(", ", X)}]{label}{color})");
 			}
 			else
 			{
@@ -155,9 +170,7 @@ namespace PythonPlotter
 					throw new InvalidOperationException("X and Y should not both be null");
 				}
 
-			    script.AppendLine(string.IsNullOrEmpty(Label)
-			        ? $"ax.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}])"
-			        : $"ax.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}], label='{Label}')");
+                script.AppendLine($"{ax}.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color})");
 			}
 		}
 	}
@@ -168,7 +181,7 @@ namespace PythonPlotter
 	public class BarSeries<T> : BaseSeries
 	{
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="PythonPlotter.BarSeries"/> is horizontal.
+		/// Gets or sets a value indicating whether this <see cref="BarSeries"/> is horizontal.
 		/// </summary>
 		/// <value><c>true</c> if horizontal; otherwise, <c>false</c>.</value>
 		public bool Horizontal { get; set; }
@@ -204,16 +217,11 @@ namespace PythonPlotter
 		public double Width { get; set; }
 
 		/// <summary>
-		/// Gets or sets the color.
-		/// </summary>
-		/// <value>The color.</value>
-		public string Color { get; set; }
-
-		/// <summary>
 		/// Plot to the specified script.
 		/// </summary>
-		/// <param name="script">Script.</param>
-		public override void Plot(StringBuilder script)
+        /// <param name="ax">The axis to plot to.</param>
+        /// <param name="script">Script.</param>
+        public override void Plot(string ax, StringBuilder script)
 		{
 			if (DependentValues == null)
 			{
@@ -232,16 +240,16 @@ namespace PythonPlotter
 
 		    var dependent = string.Join(", ", DependentValues);
 			var width = Math.Abs(Width) < double.Epsilon ? 1.0 : Width;
-			var color = string.IsNullOrEmpty(Color) ? "b" : Color;
+			var color = string.IsNullOrEmpty(Color) ? "'b'" : Color;
 		    var label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
 
 		    script.AppendLine(
-		        $"ax.{command}([{independent}], [{dependent}], {width}, color='{color}'{errorValues}{label})");
+		        $"{ax}.{command}([{independent}], [{dependent}], {width}, color={color}{errorValues}{label})");
 
 		    if (IndependentValues != null && typeof(T) != typeof(double))
 			{
 				// script.AppendLine("ax = gca()");
-			    script.AppendLine($"ax.set_xticklabels(['{string.Join("', '", IndependentValues)}'])");
+			    script.AppendLine($"{ax}.set_xticklabels(['{string.Join("', '", IndependentValues)}'])");
 			}
 		}
 	}
@@ -271,10 +279,15 @@ namespace PythonPlotter
 		/// <summary>
 		/// Plot to the specified script.
 		/// </summary>
-		/// <param name="script">Script.</param>
-		public override void Plot(StringBuilder script)
+        /// <param name="ax">The axis to plot to.</param>
+        /// <param name="script">Script.</param>
+        public override void Plot(string ax, StringBuilder script)
 		{
-			var x = X;
+            var label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
+            var errorLabel = string.IsNullOrEmpty(Label) ? "" : $", label='{ErrorLabel}'";
+            var color = string.IsNullOrEmpty(Color) ? "" : $", color=c";
+
+            var x = X;
 			var y = Y;
 			if (Y == null)
 			{
@@ -290,11 +303,10 @@ namespace PythonPlotter
 		    script.AppendLine($"x = array([{string.Join(", ", x)}])");
 		    script.AppendLine($"y = array([{string.Join(", ", y)}])");
 		    script.AppendLine($"e = array([{string.Join(", ", ErrorValues)}])");
-		    script.AppendLine(string.IsNullOrEmpty(Label) ? "ax.plot(x, y)" : $"ax.plot(x, y, label='{Label}')");
+            script.AppendLine($"c = next(palette)");
 
-		    script.AppendLine(string.IsNullOrEmpty(ErrorLabel)
-		        ? $"ax.fill_between(x, y-e, y+e, alpha={AlphaFill})"
-		        : $"ax.fill_between(x, y-e, y+e, alpha={AlphaFill}, label='{ErrorLabel}')");
+            script.AppendLine($"{ax}.plot(x, y{label}{color})");
+            script.AppendLine($"{ax}.fill_between(x, y-e, y+e, alpha={AlphaFill}{errorLabel}{color})");
 		}
 	}
 
@@ -325,11 +337,12 @@ namespace PythonPlotter
 		/// <summary>
 		/// Plot to the specified script.
 		/// </summary>
-		/// <param name="script">Script.</param>
-		public override void Plot(StringBuilder script)
+        /// <param name="ax">The axis to plot to.</param>
+        /// <param name="script">Script.</param>
+        public override void Plot(string ax, StringBuilder script)
 		{
 			script.AppendLine($"x = array({ValuesAsString})");
-			script.AppendLine($"ax.matshow(x, cmap='{ColorMap}')");
+			script.AppendLine($"{ax}.matshow(x, cmap='{ColorMap}')");
 		}
 	}
 
@@ -341,8 +354,9 @@ namespace PythonPlotter
         /// <summary>
         /// Plot to the specified script.
         /// </summary>
+        /// <param name="ax">The axis to plot to.</param>
         /// <param name="script">Script.</param>
-        public override void Plot(StringBuilder script)
+        public override void Plot(string ax, StringBuilder script)
         {
 			// Note that the color map is ignored
             script.AppendLine("from mpltools import special");
