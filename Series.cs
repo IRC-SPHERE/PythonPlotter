@@ -130,7 +130,7 @@ namespace PythonPlotter
 
             if (Y == null)
 			{
-                script.AppendLine($"{ax}.plot([{string.Join(", ", X)}]{label}{color})");
+                script.AppendLine($"lines.extend({ax}.plot([{string.Join(", ", X)}]{label}{color}))");
 			}
 			else
 			{
@@ -139,7 +139,7 @@ namespace PythonPlotter
 					throw new InvalidOperationException("X and Y should not both be null");
 				}
 
-                script.AppendLine($"{ax}.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color})");
+                script.AppendLine($"lines.extend({ax}.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color}))");
 			}
 		}
 	}
@@ -161,7 +161,7 @@ namespace PythonPlotter
 
             if (Y == null)
 			{
-                script.AppendLine($"{ax}.scatter([{string.Join(", ", X)}]{label}{color})");
+                script.AppendLine($"lines.extend({ax}.scatter([{string.Join(", ", X)}]{label}{color}))");
 			}
 			else
 			{
@@ -170,7 +170,7 @@ namespace PythonPlotter
 					throw new InvalidOperationException("X and Y should not both be null");
 				}
 
-                script.AppendLine($"{ax}.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color})");
+                script.AppendLine($"lines.extend({ax}.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color}))");
 			}
 		}
 	}
@@ -244,12 +244,12 @@ namespace PythonPlotter
 		    var label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
 
 		    script.AppendLine(
-		        $"{ax}.{command}([{independent}], [{dependent}], {width}, color={color}{errorValues}{label})");
+		        $"lines.extend({ax}.{command}([{independent}], [{dependent}], {width}, color={color}{errorValues}{label}))");
 
 		    if (IndependentValues != null && typeof(T) != typeof(double))
 			{
 				// script.AppendLine("ax = gca()");
-			    script.AppendLine($"{ax}.set_xticklabels(['{string.Join("', '", IndependentValues)}'])");
+			    script.AppendLine($"lines.extend({ax}.set_xticklabels(['{string.Join("', '", IndependentValues)}']))");
 			}
 		}
 	}
@@ -305,7 +305,7 @@ namespace PythonPlotter
 		    script.AppendLine($"e = array([{string.Join(", ", ErrorValues)}])");
             script.AppendLine($"c = next(palette)");
 
-            script.AppendLine($"{ax}.plot(x, y{label}{color})");
+            script.AppendLine($"lines.extend({ax}.plot(x, y{label}{color}))");
             script.AppendLine($"{ax}.fill_between(x, y-e, y+e, alpha={AlphaFill}{errorLabel}{color})");
 		}
 	}

@@ -39,7 +39,8 @@ namespace PythonPlotter
 	{
 		Line,
 		ErrorLine,
-		Bar
+		Bar,
+		ErrorBar
 	}
 
 	/// <summary>
@@ -268,11 +269,12 @@ namespace PythonPlotter
                 Script.AppendLine("sns.set_context('paper')");
                 Script.AppendLine("palette = itertools.cycle(sns.color_palette())");
             }
-            //else
+			//else
             //{
             //    Script.AppendLine("palette = itertools.cycle(cm.viridis)");
             //}
-
+			
+			Script.AppendLine("lines = []");
         }
 
         /// <summary>
@@ -332,7 +334,7 @@ namespace PythonPlotter
                     else if (Subplots.Rows == 1 && Subplots.Columns == 1)
                     {
                         // Just in case someone specificies subplots(1, 1) for some reason
-                        Script.AppendLine($"ax = axs[{line.Row}]");
+                        Script.AppendLine($"ax = axs");
                     }
                     else
                     {
@@ -342,22 +344,25 @@ namespace PythonPlotter
                     ConfigureAxis(ax, true);
                 }
 
-                if (TwinX && string.IsNullOrEmpty(line.Color))
-                {
-                    line.Color = "next(palette)";
-                }
-
                 line.Plot(ax, Script);
 
                 if (Series.Any(ia => !string.IsNullOrEmpty(ia.Label)))
                 {
-                    Script.AppendLine($"lgd = {ax}.legend(fontsize=14, loc={(int) LegendPosition})");
+					if (!TwinX)
+					{
+                    	Script.AppendLine($"lgd = {ax}.legend(fontsize=14, loc={(int) LegendPosition})");
+					}
                 }
             }
 
             Script.AppendLine($"{(Subplots == null ? "" : "fig.sup")}title('{Title}', fontsize=16)");
             ConfigureAxis(ax, false);
 
+			if (TwinX)
+			{
+				Script.AppendLine("labels = [l.get_label() for l in lines]");
+				Script.AppendLine($"{ax}.legend(lines, labels, fontsize=14, loc={(int)LegendPosition})");
+			}
         }
 
         /// <summary>
@@ -477,6 +482,7 @@ namespace PythonPlotter
 					series = new ISeries[] { new ErrorLineSeries { X = x, Y = y } };
 					break;
 				case PlotType.Bar:
+				case PlotType.ErrorBar:
 					series = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y } };
 					break;
 				default:
@@ -488,6 +494,19 @@ namespace PythonPlotter
 			plotter.Plot();
 		}
 
+		/// <summary>
+        /// Twin x-axis plots 
+        /// </summary>
+        /// <param name="x">The x variables.</param>
+        /// <param name="y1">The first y variables.</param>
+        /// <param name="y2">The second y variables.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="xlabel">The x-axis label.</param>
+        /// <param name="y1label">The first y-axis label.</param>
+        /// <param name="y2label">The second y-axis label.</param>
+        /// <param name="plotType1">The first plot type.</param>
+        /// <param name="plotType2">The second plot type.</param>
+        /// <param name="python">The python executable.</param>
         public static void TwinPlot(IEnumerable<double> x,
                                     IEnumerable<double> y1,
                                     IEnumerable<double> y2,
@@ -510,6 +529,7 @@ namespace PythonPlotter
                     series1 = new ISeries[] { new ErrorLineSeries { X = x, Y = y1 } };
                 break;
                 case PlotType.Bar:
+                case PlotType.ErrorBar:
                     series1 = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y1 } };
                 break;
                 default:
@@ -526,13 +546,20 @@ namespace PythonPlotter
                     series2 = new ISeries[] { new ErrorLineSeries { X = x, Y = y2 } };
                 break;
                 case PlotType.Bar:
+                case PlotType.ErrorBar:
                     series2 = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y2 } };
                 break;
                 default:
                     series2 = new ISeries[] { new LineSeries { X = x, Y = y2 } };
                 break;
             }
+			
+			// Turn on color cycling for both series
+			series1[0].Color = "next(palette)";
+			series2[0].Color = "next(palette)";
 
+			// Here we build the plotting script for the second plot (without the pre/postamble), 
+			// so we can append it to the script for the first plot
             var plotter2 = new Plotter { XLabel = xlabel, YLabel = y2label, Series = series2, TwinX = true };
             plotter2.BuildScript();
 
@@ -540,8 +567,6 @@ namespace PythonPlotter
 
             var plotter1 = new Plotter { Title = title, XLabel = xlabel, YLabel = y1label, Series = series1, Python = python };
             plotter1.Plot(plotter2.Script);
-
-
         }
 
 		/// <summary>
@@ -594,7 +619,8 @@ namespace PythonPlotter
 					plotSeries = series.Select(ia => (ISeries)(new ErrorLineSeries { Label = ia.Key, X = ia.Value })).ToArray();
 					break;
 				case PlotType.Bar:
-					plotSeries = series.Select(ia => (ISeries)(new BarSeries<double> { Label = ia.Key, IndependentValues = ia.Value })).ToArray();
+				case PlotType.ErrorBar:
+                	plotSeries = series.Select(ia => (ISeries)(new BarSeries<double> { Label = ia.Key, IndependentValues = ia.Value })).ToArray();
 					break;
 				default:
 					plotSeries = series.Select(ia => (ISeries)(new LineSeries { Label = ia.Key, X = ia.Value })).ToArray();
