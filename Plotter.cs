@@ -244,22 +244,30 @@ namespace PythonPlotter
         /// <returns>The preamble.</returns>
         public void BuildPreamble()
         {
-            Script.AppendLine("import warnings;");
+            Script.AppendLine("import warnings");
             #if FALSE
                                                 {
                 // Disable warnings for pylab only
                 script.AppendLine("with warnings.catch_warnings():");
-                script.AppendLine("    warnings.simplefilter('ignore');");
+                script.AppendLine("    warnings.simplefilter('ignore')");
                 script.AppendLine("    from pylab import *");
             }
             #else
             {
                 // Globally disable warnings 
-                Script.AppendLine("warnings.simplefilter('ignore');"); 
+                Script.AppendLine("warnings.simplefilter('ignore')");
             }
             #endif
 
-            Script.AppendLine("from pylab import *");
+            Script.AppendLine("try:");
+            Script.AppendLine("    from pylab import *");
+            Script.AppendLine("except TypeError as e:");
+            Script.AppendLine("    print(str(e))");
+            Script.AppendLine("    print('Falling back to Agg backend')");
+            Script.AppendLine("    import matplotlib");
+            Script.AppendLine("    matplotlib.use('Agg')");
+            Script.AppendLine("    from pylab import *");
+
             Script.AppendLine("import itertools");
 
             if (SeaBorn)
