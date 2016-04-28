@@ -132,19 +132,19 @@ namespace PythonPlotter
 		/// <value><c>true</c> if dark; otherwise, <c>false</c>.</value>
 		public bool Dark { get; set; } = true;
 
+	    /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="Plotter"/> should use tight fitting.
+        /// </summary>
+        /// <value><c>true</c> if dark; otherwise, <c>false</c>.</value>
+        public bool Tight { get; set; }
+
 		/// <summary>
 		/// Gets the seaborn style.
 		/// </summary>
 		/// <value>The seaborn style.</value>
-		public string SeabornStyle
-		{
-			get
-			{
-				return (Dark ? "dark" : "white") + (Grid ? "grid" : string.Empty);
-			}
-		}
+		public string SeabornStyle => (Dark ? "dark" : "white") + (Grid ? "grid" : string.Empty);
 
-		/// <summary>
+	    /// <summary>
 		/// Gets or sets the name of the script.
 		/// </summary>
 		/// <value>The name of the script.</value>
@@ -383,9 +383,11 @@ namespace PythonPlotter
             //script.AppendLine("ax.legend([{ls}], loc={(int)LegendPosition})");
             //script.AppendLine("ax.legend()");
 
+            string tight = Tight ? ", bbox_inches='tight'" : string.Empty;
+
             Script.AppendLine(
                 Series.Any(ia => !string.IsNullOrEmpty(ia.Label))
-                ? $"fig.savefig('{FigureName}', format='pdf', bbox_extra_artists=(lgd,), bbox_inches='tight')"
+                ? $"fig.savefig('{FigureName}', format='pdf', bbox_extra_artists=(lgd,){tight})"
                 : $"fig.savefig('{FigureName}', format='pdf')");
 
 
@@ -395,11 +397,12 @@ namespace PythonPlotter
             }
         }
 
-		/// <summary>
-		/// Configures the axis.
-		/// </summary>
-		/// <param name="isSubPlot">If set to <c>true</c> is sub plot.</param>
-        public void ConfigureAxis(string ax, bool isSubPlot)
+	    /// <summary>
+	    /// Configures the axis.
+	    /// </summary>
+	    /// <param name="ax">The axis to plot to.</param>
+	    /// <param name="isSubPlot">If set to <c>true</c> is sub plot.</param>
+	    public void ConfigureAxis(string ax, bool isSubPlot)
 		{
 			if (!isSubPlot)
 			{
@@ -510,8 +513,8 @@ namespace PythonPlotter
         /// <param name="y2">The second y variables.</param>
         /// <param name="title">The title.</param>
         /// <param name="xlabel">The x-axis label.</param>
-        /// <param name="y1label">The first y-axis label.</param>
-        /// <param name="y2label">The second y-axis label.</param>
+        /// <param name="y1Label">The first y-axis label.</param>
+        /// <param name="y2Label">The second y-axis label.</param>
         /// <param name="plotType1">The first plot type.</param>
         /// <param name="plotType2">The second plot type.</param>
         /// <param name="python">The python executable.</param>
@@ -520,45 +523,46 @@ namespace PythonPlotter
                                     IEnumerable<double> y2,
                                     string title = "",
                                     string xlabel = "",
-                                    string y1label = "",
-                                    string y2label = "",
+                                    string y1Label = "",
+                                    string y2Label = "",
                                     PlotType plotType1 = PlotType.Line,
                                     PlotType plotType2 = PlotType.Line,
                                     string python = "/usr/bin/python")
         {
             ISeries[] series1, series2;
+		    var xx = x as double[] ?? x.ToArray();
 
-            switch (plotType1)
+		    switch (plotType1)
             {
                 case PlotType.Line:
-                    series1 = new ISeries[] { new LineSeries { X = x, Y = y1 } };
+                    series1 = new ISeries[] { new LineSeries { X = xx, Y = y1 } };
                 break;
                 case PlotType.ErrorLine:
-                    series1 = new ISeries[] { new ErrorLineSeries { X = x, Y = y1 } };
+                    series1 = new ISeries[] { new ErrorLineSeries { X = xx, Y = y1 } };
                 break;
                 case PlotType.Bar:
                 case PlotType.ErrorBar:
-                    series1 = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y1 } };
+                    series1 = new ISeries[] { new BarSeries<double> { DependentValues = xx, IndependentValues = y1 } };
                 break;
                 default:
-                    series1 = new ISeries[] { new LineSeries { X = x, Y = y1 } };
+                    series1 = new ISeries[] { new LineSeries { X = xx, Y = y1 } };
                 break;
             }
 
             switch (plotType2)
             {
                 case PlotType.Line:
-                    series2 = new ISeries[] { new LineSeries { X = x, Y = y2 } };
+                    series2 = new ISeries[] { new LineSeries { X = xx, Y = y2 } };
                 break;
                 case PlotType.ErrorLine:
-                    series2 = new ISeries[] { new ErrorLineSeries { X = x, Y = y2 } };
+                    series2 = new ISeries[] { new ErrorLineSeries { X = xx, Y = y2 } };
                 break;
                 case PlotType.Bar:
                 case PlotType.ErrorBar:
-                    series2 = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y2 } };
+                    series2 = new ISeries[] { new BarSeries<double> { DependentValues = xx, IndependentValues = y2 } };
                 break;
                 default:
-                    series2 = new ISeries[] { new LineSeries { X = x, Y = y2 } };
+                    series2 = new ISeries[] { new LineSeries { X = xx, Y = y2 } };
                 break;
             }
 			
@@ -568,12 +572,12 @@ namespace PythonPlotter
 
 			// Here we build the plotting script for the second plot (without the pre/postamble), 
 			// so we can append it to the script for the first plot
-            var plotter2 = new Plotter { XLabel = xlabel, YLabel = y2label, Series = series2, TwinX = true };
+            var plotter2 = new Plotter { XLabel = xlabel, YLabel = y2Label, Series = series2, TwinX = true };
             plotter2.BuildScript();
 
             // TODO: http://matplotlib.org/examples/api/two_scales.html
 
-            var plotter1 = new Plotter { Title = title, XLabel = xlabel, YLabel = y1label, Series = series1, Python = python };
+            var plotter1 = new Plotter { Title = title, XLabel = xlabel, YLabel = y1Label, Series = series1, Python = python };
             plotter1.Plot(plotter2.Script);
         }
 
