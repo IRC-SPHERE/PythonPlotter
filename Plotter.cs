@@ -158,33 +158,33 @@ namespace PythonPlotter
         {
             get
             {
-                var scriptName = string.IsNullOrEmpty(ScriptName) 
-                                       ? "script.py" 
-                                       : (ScriptName.EndsWith(".py", StringComparison.Ordinal) ? ScriptName : ScriptName + ".py");
-                scriptName = scriptName.Replace(":", "-"); // .Replace("/", "-");
+                string scriptName = string.IsNullOrEmpty(ScriptName)
+                    ? "script.py"
+                    : (ScriptName.EndsWith(".py", StringComparison.Ordinal) ? ScriptName : ScriptName + ".py");
+                scriptName = scriptName.Replace(":", "-");
                 return scriptName;
             }
         }
 
+	    /// <summary>
+        /// Gets or sets the name of the pdf figure.
+        /// </summary>
+        /// <value>The name of the pdf figure.</value>
+        public string FigureName { get; set; } = "/tmp/script.pdf";
+
 		/// <summary>
-		/// Gets or sets the name of the pdf figure.
+		/// Gets or sets the valid name of the pdf figure.
 		/// </summary>
-		/// <value>The name of the pdf figure.</value>
-		public string FigureName
+		/// <value>The valid name of the pdf figure.</value>
+		public string ValidFigureName
 		{ 
 			get
 			{
-			    var figureName = string.IsNullOrEmpty(ScriptName)
-			        ? "plot.pdf"
-			        : (ScriptName.EndsWith(".py", StringComparison.Ordinal)
-			            ? ScriptName.Substring(
-			                0,
-			                ScriptName.Length - 3) + ".pdf"
-			            : ScriptName);
-                
-				figureName = figureName.EndsWith(".pdf", StringComparison.Ordinal) ? figureName : figureName + ".pdf";
-				figureName = figureName.Replace(":", "-");
-				return figureName;
+			    string figureName = string.IsNullOrEmpty(FigureName)
+			        ? "script.pdf"
+			        : (FigureName.EndsWith(".pdf", StringComparison.Ordinal) ? FigureName : FigureName + ".pdf");
+			    figureName = figureName.Replace(":", "-");
+			    return figureName;
 			}
 		}
 
@@ -387,8 +387,8 @@ namespace PythonPlotter
 
             Script.AppendLine(
                 Series.Any(ia => !string.IsNullOrEmpty(ia.Label))
-                ? $"fig.savefig('{FigureName}', format='pdf', bbox_extra_artists=(lgd,){tight})"
-                : $"fig.savefig('{FigureName}', format='pdf')");
+                ? $"fig.savefig('{ValidFigureName}', format='pdf', bbox_extra_artists=(lgd,){tight})"
+                : $"fig.savefig('{ValidFigureName}', format='pdf')");
 
 
             if (Show)
