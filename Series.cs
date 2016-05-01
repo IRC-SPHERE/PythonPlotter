@@ -361,7 +361,8 @@ namespace PythonPlotter
 			// Note that the color map is ignored
             script.AppendLine("from mpltools import special");
             script.AppendLine($"x = array({ValuesAsString})");
-			script.AppendLine($"special.hinton(x)");
+            script.AppendLine($"sca({ax})");
+			script.AppendLine("special.hinton(x)");
         }
     }
 }
