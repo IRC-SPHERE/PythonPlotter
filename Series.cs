@@ -156,12 +156,12 @@ namespace PythonPlotter
         /// <param name="script"></param>
         public override void Plot(string ax, StringBuilder script)
 		{
-            var label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
-            var color = string.IsNullOrEmpty(Color) ? "" : $", color={Color}";
+            string label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
+            string color = string.IsNullOrEmpty(Color) ? "" : $", c={Color}";
 
             if (Y == null)
 			{
-                script.AppendLine($"lines.extend({ax}.scatter([{string.Join(", ", X)}]{label}{color}))");
+                script.AppendLine($"{ax}.scatter([{string.Join(", ", X)}]{label}{color})");
 			}
 			else
 			{
@@ -170,7 +170,7 @@ namespace PythonPlotter
 					throw new InvalidOperationException("X and Y should not both be null");
 				}
 
-                script.AppendLine($"lines.extend({ax}.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color}))");
+                script.AppendLine($"{ax}.scatter([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color})");
 			}
 		}
 	}
