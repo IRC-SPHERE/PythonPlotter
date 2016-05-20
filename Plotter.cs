@@ -40,7 +40,8 @@ namespace PythonPlotter
 		Line,
 		ErrorLine,
 		Bar,
-		ErrorBar
+		ErrorBar,
+	    Hinton
 	}
 
 	/// <summary>
