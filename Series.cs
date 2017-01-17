@@ -118,19 +118,25 @@ namespace PythonPlotter
 		/// </summary>
 		public IEnumerable<double> Y { get; set; }
 
-		/// <summary>
+	    /// <summary>
+	    /// Gets or sets the line style
+	    /// </summary>
+	    public string LineStyle { get; set; }
+
+	    /// <summary>
 		/// Plot to the specified script.
 		/// </summary>
         /// <param name="ax">The axis to plot to.</param>
         /// <param name="script">Script.</param>
         public override void Plot(string ax, StringBuilder script)
 		{
-            var label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
-            var color = string.IsNullOrEmpty(Color) ? "" : $", color={Color}";
+            string label = string.IsNullOrEmpty(Label) ? "" : $", label='{Label}'";
+            string color = string.IsNullOrEmpty(Color) ? "" : $", color={Color}";
+		    string style = string.IsNullOrEmpty(LineStyle) ? "" : $", linestyle='{LineStyle}'";
 
             if (Y == null)
 			{
-                script.AppendLine($"lines.extend({ax}.plot([{string.Join(", ", X)}]{label}{color}))");
+                script.AppendLine($"lines.extend({ax}.plot([{string.Join(", ", X)}]{label}{color}{style}))");
 			}
 			else
 			{
@@ -139,7 +145,8 @@ namespace PythonPlotter
 					throw new InvalidOperationException("X and Y should not both be null");
 				}
 
-                script.AppendLine($"lines.extend({ax}.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color}))");
+			    script.AppendLine(
+			        $"lines.extend({ax}.plot([{string.Join(", ", X)}], [{string.Join(", ", Y)}]{label}{color}{style}))");
 			}
 		}
 	}
