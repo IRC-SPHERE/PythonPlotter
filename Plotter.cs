@@ -173,6 +173,11 @@ namespace PythonPlotter
         /// <value>The name of the pdf figure.</value>
         public string FigureName { get; set; } = "/tmp/script.pdf";
 
+	    /// <summary>
+	    /// Gets or sets the figure size (in inches)
+	    /// </summary>
+	    public Tuple<double, double> FigureSize { get; set; }
+
 		/// <summary>
 		/// Gets or sets the valid name of the pdf figure.
 		/// </summary>
@@ -316,6 +321,10 @@ namespace PythonPlotter
                 Script.AppendLine($"fig, axs = subplots({Subplots.Rows}, {Subplots.Columns}, sharex={Subplots.ShareX}, sharey={Subplots.ShareY})");
             }
 
+            if (FigureSize != null)
+            {
+                Script.AppendLine($"fig.set_size_inches({FigureSize.Item1}, {FigureSize.Item2}, forward=True)");
+            }
 
             if (Subplots != null && TwinX)
             {
