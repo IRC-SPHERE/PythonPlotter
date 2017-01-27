@@ -318,7 +318,9 @@ namespace PythonPlotter
                     throw new InvalidOperationException("Simultaneous Subplots and TwinX are currently not supported");
                 }
 
-                Script.AppendLine($"fig, axs = subplots({Subplots.Rows}, {Subplots.Columns}, sharex={Subplots.ShareX}, sharey={Subplots.ShareY})");
+                Script.AppendLine(
+                    $"fig, axs = subplots({Subplots.Rows}, {Subplots.Columns}, " +
+                    $"sharex={Subplots.ShareX}, sharey={Subplots.ShareY})");
             }
 
             if (FigureSize != null)
@@ -425,7 +427,8 @@ namespace PythonPlotter
 				{
 					// Set common labels
 				    Script.AppendLine($"fig.text(0.5, 0.04, '{XLabel}', fontsize=16, ha='center', va='center')");
-				    Script.AppendLine($"fig.text(0.04, 0.5, '{YLabel}', fontsize=16, ha='center', va='center', rotation='vertical')");
+				    Script.AppendLine(
+				        $"fig.text(0.04, 0.5, '{YLabel}', fontsize=16, ha='center', va='center', rotation='vertical')");
 				}
 			}
 			else
@@ -471,21 +474,23 @@ namespace PythonPlotter
 		                        PlotType plotType = PlotType.Line,
 		                        string python = "/usr/bin/python")
 		{
-			Plot(x, null, title, xlabel, ylabel, plotType, python);
+			Plot(x, null, null, title, xlabel, ylabel, plotType, python);
 		}
 
-		/// <summary>
-		/// Plot the specified x, y, title, xlabel, ylabel and plotType.
-		/// </summary>
-		/// <param name="x">The x coordinate.</param>
-		/// <param name="y">The y coordinate.</param>
-		/// <param name="title">Title.</param>
-		/// <param name="xlabel">Xlabel.</param>
-		/// <param name="ylabel">Ylabel.</param>
-		/// <param name="plotType">Plot type.</param>
-		/// <param name="python">Path of python executable.</param>
-		public static void Plot(IEnumerable<double> x,
+	    /// <summary>
+	    /// Plot the specified x, y, title, xlabel, ylabel and plotType.
+	    /// </summary>
+	    /// <param name="x">The x coordinate.</param>
+	    /// <param name="y">The y coordinate.</param>
+	    /// <param name="errorValues">The error values.</param>
+	    /// <param name="title">Title.</param>
+	    /// <param name="xlabel">Xlabel.</param>
+	    /// <param name="ylabel">Ylabel.</param>
+	    /// <param name="plotType">Plot type.</param>
+	    /// <param name="python">Path of python executable.</param>
+	    public static void Plot(IEnumerable<double> x,
 		                        IEnumerable<double> y = null,
+		                        IEnumerable<double> errorValues = null,
 		                        string title = "",
 		                        string xlabel = "",
 		                        string ylabel = "",
@@ -494,24 +499,33 @@ namespace PythonPlotter
 		{
 			ISeries[] series;
 
-			switch (plotType)
-			{
-				case PlotType.Line:
-					series = new ISeries[] { new LineSeries { X = x, Y = y } };
-					break;
-				case PlotType.ErrorLine:
-					series = new ISeries[] { new ErrorLineSeries { X = x, Y = y } };
-					break;
-				case PlotType.Bar:
-				case PlotType.ErrorBar:
-					series = new ISeries[] { new BarSeries<double> { DependentValues = x, IndependentValues = y } };
-					break;
-				default:
+		    switch (plotType)
+		    {
+		        case PlotType.Line:
+		            series = new ISeries[] {new LineSeries {X = x, Y = y}};
+		            break;
+		        case PlotType.ErrorLine:
+		            series = new ISeries[] {new ErrorLineSeries {X = x, Y = y}};
+		            break;
+		        case PlotType.Bar:
+		        case PlotType.ErrorBar:
+		            series = new ISeries[]
+		            {
+		                new BarSeries<double> {DependentValues = x, IndependentValues = y, ErrorValues = errorValues}
+		            };
+		            break;
+		        case PlotType.Hinton:
+		            throw new ArgumentOutOfRangeException(nameof(plotType));
+		        default:
 					series = new ISeries[] { new LineSeries { X = x, Y = y } };
 					break;
 			}
 
-		    var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = series, Python = python };
+		    var plotter = new Plotter
+		    {
+		        Title = title, XLabel = xlabel, YLabel = ylabel, Series = series, Python = python
+		    };
+
 			plotter.Plot();
 		}
 
@@ -587,7 +601,11 @@ namespace PythonPlotter
 
             // TODO: http://matplotlib.org/examples/api/two_scales.html
 
-            var plotter1 = new Plotter { Title = title, XLabel = xlabel, YLabel = y1Label, Series = series1, Python = python };
+            var plotter1 = new Plotter
+            {
+                Title = title, XLabel = xlabel, YLabel = y1Label, Series = series1, Python = python
+            };
+
             plotter1.Plot(plotter2.Script);
         }
 
@@ -610,7 +628,11 @@ namespace PythonPlotter
 		                             string python = "/usr/bin/python")
 		{
 			var series = new ISeries[] { new ErrorLineSeries { X = x, Y = y, ErrorValues = errorValues } };
-			var plotter = new Plotter { Title = title, XLabel = xLabel, YLabel = yLabel, Series = series, Python = python };
+			var plotter = new Plotter
+			{
+			    Title = title, XLabel = xLabel, YLabel = yLabel, Series = series, Python = python
+			};
+
 			plotter.Plot();
 		}
 
@@ -632,79 +654,87 @@ namespace PythonPlotter
 		{
 			ISeries[] plotSeries;
 
-			switch (plotType)
-			{
-				case PlotType.Line:
-					plotSeries = series.Select(ia => (ISeries)(new LineSeries { Label = ia.Key, X = ia.Value })).ToArray();
-					break;
-				case PlotType.ErrorLine:
-					plotSeries = series.Select(ia => (ISeries)(new ErrorLineSeries { Label = ia.Key, X = ia.Value })).ToArray();
-					break;
-				case PlotType.Bar:
-				case PlotType.ErrorBar:
-                	plotSeries = series.Select(ia => (ISeries)(new BarSeries<double> { Label = ia.Key, IndependentValues = ia.Value })).ToArray();
-					break;
-				default:
-					plotSeries = series.Select(ia => (ISeries)(new LineSeries { Label = ia.Key, X = ia.Value })).ToArray();
+		    switch (plotType)
+		    {
+		        case PlotType.Line:
+		            plotSeries = series.Select(ia => (ISeries) new LineSeries {Label = ia.Key, X = ia.Value}).ToArray();
+		            break;
+		        case PlotType.ErrorLine:
+		            plotSeries = series.Select(ia => (ISeries) new ErrorLineSeries {Label = ia.Key, X = ia.Value}).ToArray();
+		            break;
+		        case PlotType.Bar:
+		        case PlotType.ErrorBar:
+		            plotSeries = series
+		                .Select(ia => (ISeries) new BarSeries<double> {Label = ia.Key, IndependentValues = ia.Value})
+		                .ToArray();
+		            break;
+		        default:
+		            plotSeries = series.Select(ia => (ISeries) new LineSeries {Label = ia.Key, X = ia.Value}).ToArray();
 					break;
 			}
 
-			var plotter = new Plotter { Title = title, XLabel = xlabel, YLabel = ylabel, Series = plotSeries, Python = python };
-			plotter.Plot();
-		}
-			
-		/// <summary>
-		/// Plot the matrix using matshow.
-		/// </summary>
-		/// <param name="matrix">Matrix.</param>
-		/// <param name="title">Title.</param>
-		/// <param name="xlabel">Xlabel.</param>
-		/// <param name="ylabel">Ylabel.</param>
-		/// <param name="python">Path of python executable.</param>
-		public static void MatShow(double[][] matrix, string title = "", string xlabel = "", string ylabel = "", string python = "/usr/lib/python")
-		{
-			var plotter = new Plotter 
-				{ 
-					Title = title, 
-					XLabel = xlabel, 
-					YLabel = ylabel, 
-					Python = python,
-					Series = new ISeries[] { new MatrixSeries { Values = matrix } },
-					Grid = false
-				};
+		    var plotter = new Plotter
+		    {
+		        Title = title, XLabel = xlabel, YLabel = ylabel, Series = plotSeries, Python = python
+		    };
+
 			plotter.Plot();
 		}
 
-		/// <summary>
-		/// Hinton diagram.
-		/// </summary>
-		/// <param name="matrix">Matrix.</param>
-		/// <param name="title">Title.</param>
-		/// <param name="xlabel">Xlabel.</param>
-		/// <param name="ylabel">Ylabel.</param>
-		/// <param name="python">Path of python executable.</param>
-		public static void Hinton(double[][] matrix, string title = "", string xlabel = "", string ylabel = "", string python = "/usr/lib/python")
+	    /// <summary>
+	    /// Plot the matrix using matshow.
+	    /// </summary>
+	    /// <param name="matrix">Matrix.</param>
+	    /// <param name="title">Title.</param>
+	    /// <param name="xlabel">Xlabel.</param>
+	    /// <param name="ylabel">Ylabel.</param>
+	    /// <param name="python">Path of python executable.</param>
+	    public static void MatShow(double[][] matrix, string title = "", string xlabel = "", string ylabel = "",
+	        string python = "/usr/lib/python")
 	    {
-	        var plotter = new Plotter 
-				{ 
-					Title = title, 
-					XLabel = xlabel, 
-					YLabel = ylabel, 
-					Python = python,
-					Series = new ISeries[] { new HintonSeries { Values = matrix } },
-					Grid = false
-				};
-			plotter.Plot();
+	        var plotter = new Plotter
+	        {
+	            Title = title,
+	            XLabel = xlabel,
+	            YLabel = ylabel,
+	            Python = python,
+	            Series = new ISeries[] {new MatrixSeries {Values = matrix}},
+	            Grid = false
+	        };
+	        plotter.Plot();
 	    }
 
-        /// <summary>
+	    /// <summary>
+	    /// Hinton diagram.
+	    /// </summary>
+	    /// <param name="matrix">Matrix.</param>
+	    /// <param name="title">Title.</param>
+	    /// <param name="xlabel">Xlabel.</param>
+	    /// <param name="ylabel">Ylabel.</param>
+	    /// <param name="python">Path of python executable.</param>
+	    public static void Hinton(double[][] matrix, string title = "", string xlabel = "", string ylabel = "",
+	        string python = "/usr/lib/python")
+	    {
+	        var plotter = new Plotter
+	        {
+	            Title = title,
+	            XLabel = xlabel,
+	            YLabel = ylabel,
+	            Python = python,
+	            Series = new ISeries[] {new HintonSeries {Values = matrix}},
+	            Grid = false
+	        };
+	        plotter.Plot();
+	    }
+
+	    /// <summary>
         /// Demo plot.
         /// </summary>
         public static void Demo(string python = "/usr/bin/python")
         {
             var x = Enumerable.Range(0, 200).Select(ia => ia / 100.0).ToArray();
             var y = x.Select(ia => Math.Sin(2.0 * ia * Math.PI));
-            Plot(x, y, "Test figure", "$x$", @"$\sin(2 \pi x)$", PlotType.Line, python);
+            Plot(x, y, null, "Test figure", "$x$", @"$\sin(2 \pi x)$", PlotType.Line, python);
         }
 	}
 
