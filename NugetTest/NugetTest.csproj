@@ -8,6 +8,7 @@
     <RootNamespace>NugetTest</RootNamespace>
     <AssemblyName>NugetTest</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,9 +30,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="PythonPlotter">
-      <HintPath>..\packages\PythonPlotter.0.2.13\lib\net45\Release\PythonPlotter.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />

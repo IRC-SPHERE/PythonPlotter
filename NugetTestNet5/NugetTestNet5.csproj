@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <LangVersion>default</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="PythonPlotter.0.3.0\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="PythonPlotter.0.3.0\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="PythonPlotter.0.3.0\**" />
+    </ItemGroup>
+
+</Project>

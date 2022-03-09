@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <AssemblyName>PythonPlotter</AssemblyName>
+        <RootNamespace>PythonPlotter</RootNamespace>
+        <LangVersion>default</LangVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageVersion>0.3.0</PackageVersion>
+        <Title>Python Plotter</Title>
+        <Authors>Tom Diethe</Authors>
+        <Description>Package to allow use of matplotlib from .NET.
+Python packages required: numpy, matplotlib, seaborn</Description>
+        <Copyright>Copyright University of Bristol © 2022</Copyright>
+        <PackageProjectUrl>https://github.com/IRC-SPHERE/PythonPlotter</PackageProjectUrl>
+        <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+        <PackageTags>python matplotlib</PackageTags>
+        <PackageReleaseNotes>0.3.0: Rebuilt for .net5.0. Fixed regressions.
+0.2.14: Fixed legend issue in subplots.
+0.2.12: Added more tests. Added matshow.
+0.2.11: Added ability to turn grid on/off and switch between light or dark styles.
+0.2.10: Added Hinton diagrams.
+0.2.9: Updated default python path to /usr/bin/python.
+Note that this version has only been tested on *ix environments.</PackageReleaseNotes>
+    </PropertyGroup>
+
+</Project>

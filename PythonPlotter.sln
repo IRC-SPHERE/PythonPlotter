@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PythonPlotterTests", "Pytho
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NugetTest", "NugetTest\NugetTest.csproj", "{EABDF6B5-B29F-416F-B08D-88D59F1EEAFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PythonPlotterNet5", "PythonPlotterNet5\PythonPlotterNet5.csproj", "{29FAA42E-1DBB-47E3-8CAD-6ECD0C4DDFBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PythonPlotterTestsNet5", "PythonPlotterTestsNet5\PythonPlotterTestsNet5.csproj", "{D613B23B-3B19-47C5-981B-A65C6454C02B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NugetTestNet5", "NugetTestNet5\NugetTestNet5.csproj", "{BE9C7271-FDFD-4028-BFA2-F8EE56A69AB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,8 +28,17 @@ Global
 		{BA9C99B1-A4BE-49A5-AA5B-6E3D45F276D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA9C99B1-A4BE-49A5-AA5B-6E3D45F276D2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EABDF6B5-B29F-416F-B08D-88D59F1EEAFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EABDF6B5-B29F-416F-B08D-88D59F1EEAFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EABDF6B5-B29F-416F-B08D-88D59F1EEAFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EABDF6B5-B29F-416F-B08D-88D59F1EEAFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29FAA42E-1DBB-47E3-8CAD-6ECD0C4DDFBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29FAA42E-1DBB-47E3-8CAD-6ECD0C4DDFBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29FAA42E-1DBB-47E3-8CAD-6ECD0C4DDFBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29FAA42E-1DBB-47E3-8CAD-6ECD0C4DDFBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D613B23B-3B19-47C5-981B-A65C6454C02B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D613B23B-3B19-47C5-981B-A65C6454C02B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D613B23B-3B19-47C5-981B-A65C6454C02B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D613B23B-3B19-47C5-981B-A65C6454C02B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE9C7271-FDFD-4028-BFA2-F8EE56A69AB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE9C7271-FDFD-4028-BFA2-F8EE56A69AB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE9C7271-FDFD-4028-BFA2-F8EE56A69AB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

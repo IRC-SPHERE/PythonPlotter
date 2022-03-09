@@ -24,6 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+
 namespace PythonPlotterTests
 {
 	using PythonPlotter;
@@ -35,11 +37,18 @@ namespace PythonPlotterTests
 		/// </summary>
 		/// <param name="args">The command-line arguments.</param>
         private static void Main(string[] args)
-        {
-            Plotter.Demo();
-            Tests.Hinton();
-			Tests.MatShow();
-			Tests.Subplots();
+		{
+			var python = "/usr/bin/python";
+			if (args != null && args.Length > 0)
+			{
+				python = args[0];
+			}
+			Console.WriteLine($"Using Python executable {python}");
+			
+			Plotter.Demo(python);
+            Tests.Hinton(python);
+			Tests.MatShow(python);
+			Tests.Subplots(python);
         }
     }
 }
